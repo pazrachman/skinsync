@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import {
   addScheduleItem,
   deleteScheduleItem,
@@ -22,6 +22,15 @@ const initialState: ScheduleFormState = { error: null };
 function AddScheduleItemForm({ products }: { products: Product[] }) {
   const [state, formAction, pending] = useActionState(addScheduleItem, initialState);
   const [open, setOpen] = useState(false);
+  const daysContainerRef = useRef<HTMLDivElement>(null);
+
+  function selectAllDays() {
+    daysContainerRef.current
+      ?.querySelectorAll<HTMLInputElement>('input[name="days_of_week"]')
+      .forEach((checkbox) => {
+        checkbox.checked = true;
+      });
+  }
 
   if (!open) {
     return (
@@ -62,20 +71,34 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
 
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-skn-ink/70">זמן ביום</label>
-          <select
-            name="time_of_day"
-            required
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
-          >
-            <option value="morning">בוקר</option>
-            <option value="evening">ערב</option>
-          </select>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 pt-2">
+            {SLOTS.map((slot) => (
+              <label key={slot.key} className="flex items-center gap-1.5 text-sm text-skn-ink/65">
+                <input
+                  type="checkbox"
+                  name="time_of_day"
+                  value={slot.key}
+                  defaultChecked={slot.key === "morning"}
+                />
+                {slot.label}
+              </label>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-skn-ink/70">ימים בשבוע</label>
-        <div className="flex flex-wrap gap-x-3 gap-y-1">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-skn-ink/70">ימים בשבוע</label>
+          <button
+            type="button"
+            onClick={selectAllDays}
+            className="text-xs font-medium text-skn-pink-deep hover:underline"
+          >
+            בחר/י את כל הימים
+          </button>
+        </div>
+        <div ref={daysContainerRef} className="flex flex-wrap gap-x-3 gap-y-1">
           {DAY_LABELS.map((label, idx) => (
             <label key={idx} className="flex items-center gap-1.5 text-sm text-skn-ink/65">
               <input type="checkbox" name="days_of_week" value={idx} />
