@@ -50,26 +50,26 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="font-display text-2xl font-medium text-skn-ink">
           {today.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
         </h1>
-        <p className="text-sm text-slate-500">ריכוז מהיר של מה שקורה היום בשגרת הטיפוח שלך</p>
+        <p className="text-sm text-skn-ink/55">ריכוז מהיר של מה שקורה היום בשגרת הטיפוח שלך</p>
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-slate-800">השגרה של היום</h2>
+        <h2 className="text-lg font-semibold text-skn-ink/85">השגרה של היום</h2>
         <TodayRoutine items={todayItems} completedIds={completedIds} date={todayIso} />
       </section>
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-800">מוצרים שדורשים תשומת לב</h2>
-          <Link href="/inventory" className="text-sm font-medium text-rose-600 hover:underline">
+          <h2 className="text-lg font-semibold text-skn-ink/85">מוצרים שדורשים תשומת לב</h2>
+          <Link href="/inventory" className="text-sm font-medium text-skn-pink-deep hover:underline">
             לכל הארון
           </Link>
         </div>
         {attention.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+          <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-6 text-center text-sm text-skn-ink/55">
             אין מוצרים שפג תוקפם או מתקרבים לתפוגה 🎉
           </p>
         ) : (
@@ -77,11 +77,11 @@ export default async function DashboardPage() {
             {attention.map(({ product, info }) => (
               <li
                 key={product.id}
-                className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm"
               >
-                <span className="font-medium text-slate-800">
+                <span className="font-medium text-skn-ink/85">
                   {product.name}
-                  {product.brand && <span className="text-slate-400"> · {product.brand}</span>}
+                  {product.brand && <span className="text-skn-ink/40"> · {product.brand}</span>}
                 </span>
                 <span
                   className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${EXPIRY_STATUS_COLOR[info.status]}`}
@@ -100,13 +100,13 @@ export default async function DashboardPage() {
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-800">תזכורות תחזוקה</h2>
-          <Link href="/reminders" className="text-sm font-medium text-rose-600 hover:underline">
+          <h2 className="text-lg font-semibold text-skn-ink/85">תזכורות תחזוקה</h2>
+          <Link href="/reminders" className="text-sm font-medium text-skn-pink-deep hover:underline">
             לכל התזכורות
           </Link>
         </div>
         {dueReminders.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+          <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-6 text-center text-sm text-skn-ink/55">
             הכל מסודר, אין תזכורות שממתינות כרגע.
           </p>
         ) : (
@@ -114,10 +114,10 @@ export default async function DashboardPage() {
             {dueReminders.map(({ reminder, info }) => (
               <li
                 key={reminder.id}
-                className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm"
               >
-                <span className="font-medium text-slate-800">{reminder.title}</span>
-                <span className="text-xs text-slate-500">
+                <span className="font-medium text-skn-ink/85">{reminder.title}</span>
+                <span className="text-xs text-skn-ink/55">
                   {info.status === "never_done"
                     ? "טרם בוצע"
                     : info.status === "overdue"

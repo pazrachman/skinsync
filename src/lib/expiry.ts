@@ -47,10 +47,10 @@ export const EXPIRY_STATUS_LABEL: Record<ExpiryStatus, string> = {
 };
 
 export const EXPIRY_STATUS_COLOR: Record<ExpiryStatus, string> = {
-  unopened: "bg-slate-100 text-slate-600 border-slate-300",
-  fresh: "bg-emerald-100 text-emerald-700 border-emerald-300",
-  soon: "bg-amber-100 text-amber-700 border-amber-300",
-  expired: "bg-rose-100 text-rose-700 border-rose-300",
+  unopened: "bg-skn-sand/40 text-skn-ink/60 border-skn-sand",
+  fresh: "bg-skn-sage/10 text-skn-sage border-skn-sage/30",
+  soon: "bg-skn-honey/10 text-skn-honey border-skn-honey/30",
+  expired: "bg-skn-berry/10 text-skn-berry border-skn-berry/30",
 };
 
 export type ReminderStatus = "ok" | "due_soon" | "overdue" | "never_done";
@@ -97,8 +97,8 @@ export const REMINDER_STATUS_LABEL: Record<ReminderStatus, string> = {
 };
 
 export const REMINDER_STATUS_COLOR: Record<ReminderStatus, string> = {
-  never_done: "bg-slate-100 text-slate-600 border-slate-300",
-  ok: "bg-emerald-100 text-emerald-700 border-emerald-300",
-  due_soon: "bg-amber-100 text-amber-700 border-amber-300",
-  overdue: "bg-rose-100 text-rose-700 border-rose-300",
+  never_done: "bg-skn-sand/40 text-skn-ink/60 border-skn-sand",
+  ok: "bg-skn-sage/10 text-skn-sage border-skn-sage/30",
+  due_soon: "bg-skn-honey/10 text-skn-honey border-skn-honey/30",
+  overdue: "bg-skn-berry/10 text-skn-berry border-skn-berry/30",
 };

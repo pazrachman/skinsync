@@ -10,9 +10,12 @@ const LINKS = [
 
 export default function Navbar() {
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="border-b border-skn-sand bg-white">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <Link href="/dashboard" className="text-lg font-bold text-rose-600">
+        <Link
+          href="/dashboard"
+          className="font-display text-lg font-medium text-skn-pink-deep"
+        >
           SkinSync
         </Link>
         <nav className="flex flex-wrap items-center gap-1 text-sm">
@@ -20,7 +23,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-lg px-3 py-1.5 font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              className="rounded-lg px-3 py-1.5 font-medium text-skn-ink/65 transition hover:bg-skn-cream hover:text-skn-ink"
             >
               {link.label}
             </Link>
@@ -28,7 +31,7 @@ export default function Navbar() {
           <form action={signOut}>
             <button
               type="submit"
-              className="rounded-lg px-3 py-1.5 font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-600"
+              className="rounded-lg px-3 py-1.5 font-medium text-skn-ink/45 transition hover:bg-skn-pink/10 hover:text-skn-pink-deep"
             >
               התנתקות
             </button>
