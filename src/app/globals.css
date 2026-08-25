@@ -1,23 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #fbf3ea;
+  --foreground: #3a2c24;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* SkinSync design tokens — a warm, cheerful palette for an everyday
+     skincare ritual: cream and soft coral rather than clinical white,
+     with each accent tied to a real meaning in the product (status
+     colors, ingredient tags) instead of a decorative gradient. */
+  --color-skn-cream: #fbf3ea;
+  --color-skn-cream-deep: #f3e4d4;
+  --color-skn-ink: #3a2c24;
+  --color-skn-pink: #e8637a;
+  --color-skn-pink-deep: #c23a56;
+  --color-skn-peach: #a85c26;
+  --color-skn-sage: #5f7d52;
+  --color-skn-honey: #9c6a1f;
+  --color-skn-berry: #b84a63;
+  --color-skn-lilac: #8a5a9c;
+  --color-skn-sand: #e7d9c8;
+
+  --font-sans: var(--font-assistant), "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-frank-ruhl), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    "Segoe UI",
-    system-ui,
-    -apple-system,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: var(--font-sans);
 }

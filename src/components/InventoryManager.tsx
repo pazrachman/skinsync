@@ -47,11 +47,11 @@ export default function InventoryManager({ products }: { products: Product[] }) 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-slate-900">ארון הטיפוח שלי</h1>
+        <h1 className="font-display text-xl font-medium text-skn-ink">ארון הטיפוח שלי</h1>
         {!formOpen && (
           <button
             onClick={openCreate}
-            className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
+            className="rounded-xl bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
           >
             + הוספת מוצר
           </button>
@@ -63,7 +63,7 @@ export default function InventoryManager({ products }: { products: Product[] }) 
       )}
 
       {sorted.length === 0 && !formOpen && (
-        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+        <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-8 text-center text-sm text-skn-ink/55">
           עדיין לא הוספת מוצרים. לחצי על &ldquo;הוספת מוצר&rdquo; כדי להתחיל.
         </p>
       )}
@@ -72,22 +72,22 @@ export default function InventoryManager({ products }: { products: Product[] }) 
         {sorted.map((p) => (
           <li
             key={p.id}
-            className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold text-slate-900">{p.name}</span>
-                {p.brand && <span className="text-sm text-slate-400">· {p.brand}</span>}
+                <span className="font-semibold text-skn-ink">{p.name}</span>
+                {p.brand && <span className="text-sm text-skn-ink/40">· {p.brand}</span>}
                 {p.is_device && (
-                  <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700">
+                  <span className="rounded-full bg-skn-peach/10 px-2 py-0.5 text-xs font-medium text-skn-peach">
                     מכשיר
                   </span>
                 )}
                 <ExpiryBadge product={p} />
               </div>
-              {p.category && <p className="text-sm text-slate-500">{p.category}</p>}
+              {p.category && <p className="text-sm text-skn-ink/55">{p.category}</p>}
               <IngredientTags ingredients={p.active_ingredients} />
-              {p.notes && <p className="text-sm text-slate-400">{p.notes}</p>}
+              {p.notes && <p className="text-sm text-skn-ink/40">{p.notes}</p>}
             </div>
 
             <div className="flex shrink-0 flex-wrap gap-2">
@@ -95,7 +95,7 @@ export default function InventoryManager({ products }: { products: Product[] }) 
                 <form action={markProductOpened.bind(null, p.id)}>
                   <button
                     type="submit"
-                    className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                    className="rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-1.5 text-xs font-medium text-skn-sage hover:bg-skn-sage/20"
                   >
                     סמני כנפתח היום
                   </button>
@@ -103,14 +103,14 @@ export default function InventoryManager({ products }: { products: Product[] }) 
               )}
               <button
                 onClick={() => openEdit(p)}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border border-skn-sand px-3 py-1.5 text-xs font-medium text-skn-ink/65 hover:bg-skn-cream"
               >
                 עריכה
               </button>
               <form action={deleteProduct.bind(null, p.id)}>
                 <button
                   type="submit"
-                  className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-500 hover:bg-rose-50"
+                  className="rounded-lg border border-skn-berry/30 px-3 py-1.5 text-xs font-medium text-skn-berry hover:bg-skn-berry/10"
                 >
                   מחיקה
                 </button>

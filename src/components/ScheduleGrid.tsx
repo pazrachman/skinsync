@@ -27,7 +27,7 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
+        className="rounded-xl bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
       >
         + שיבוץ מוצר לשגרה
       </button>
@@ -40,15 +40,15 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
         await formAction(fd);
         setOpen(false);
       }}
-      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+      className="flex flex-col gap-3 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm"
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">מוצר / מכשיר</label>
+          <label className="text-sm font-medium text-skn-ink/70">מוצר / מכשיר</label>
           <select
             name="product_id"
             required
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100"
+            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
           >
             <option value="">בחרי מוצר...</option>
             {products.map((p) => (
@@ -61,11 +61,11 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">זמן ביום</label>
+          <label className="text-sm font-medium text-skn-ink/70">זמן ביום</label>
           <select
             name="time_of_day"
             required
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100"
+            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
           >
             <option value="morning">בוקר</option>
             <option value="evening">ערב</option>
@@ -74,10 +74,10 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-slate-700">ימים בשבוע</label>
+        <label className="text-sm font-medium text-skn-ink/70">ימים בשבוע</label>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
           {DAY_LABELS.map((label, idx) => (
-            <label key={idx} className="flex items-center gap-1.5 text-sm text-slate-600">
+            <label key={idx} className="flex items-center gap-1.5 text-sm text-skn-ink/65">
               <input type="checkbox" name="days_of_week" value={idx} />
               {label}
             </label>
@@ -86,21 +86,21 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{state.error}</p>
+        <p className="rounded-lg bg-skn-berry/10 px-3 py-2 text-sm text-skn-berry">{state.error}</p>
       )}
 
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-600 disabled:opacity-60"
+          className="rounded-lg bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white hover:brightness-90 disabled:opacity-60"
         >
           {pending ? "משבצת..." : "שיבוץ"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
+          className="rounded-lg px-4 py-2 text-sm font-medium text-skn-ink/55 hover:bg-skn-cream"
         >
           ביטול
         </button>
@@ -128,22 +128,22 @@ export default function ScheduleGrid({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-slate-900">שגרה שבועית</h1>
+        <h1 className="font-display text-xl font-medium text-skn-ink">שגרה שבועית</h1>
         <AddScheduleItemForm products={products} />
       </div>
 
       {scheduleItems.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+        <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-8 text-center text-sm text-skn-ink/55">
           עדיין לא שיבצת מוצרים לשגרה. השתמשי ב&ldquo;שיבוץ מוצר לשגרה&rdquo; כדי להתחיל.
         </p>
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
         {weekDates.map((date, dayIdx) => (
-          <div key={date} className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <div key={date} className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-3 shadow-sm">
             <div className="text-center">
-              <p className="text-sm font-semibold text-slate-900">{DAY_LABELS[dayIdx]}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-sm font-semibold text-skn-ink">{DAY_LABELS[dayIdx]}</p>
+              <p className="text-xs text-skn-ink/40">
                 {new Date(date).toLocaleDateString("he-IL", { day: "numeric", month: "numeric" })}
               </p>
             </div>
@@ -157,10 +157,10 @@ export default function ScheduleGrid({
               );
 
               return (
-                <div key={slot.key} className="flex flex-col gap-1.5 border-t border-slate-100 pt-2 first:border-t-0 first:pt-0">
-                  <p className="text-xs font-semibold text-slate-400">{slot.label}</p>
+                <div key={slot.key} className="flex flex-col gap-1.5 border-t border-skn-sand/60 pt-2 first:border-t-0 first:pt-0">
+                  <p className="text-xs font-semibold text-skn-ink/45">{slot.label}</p>
 
-                  {items.length === 0 && <p className="text-xs text-slate-300">—</p>}
+                  {items.length === 0 && <p className="text-xs text-skn-ink/25">—</p>}
 
                   {items.map((item) => {
                     const key = `${item.id}_${date}`;
@@ -168,22 +168,22 @@ export default function ScheduleGrid({
                     return (
                       <div
                         key={item.id}
-                        className="flex items-center justify-between gap-1 rounded-lg bg-slate-50 px-2 py-1"
+                        className="flex items-center justify-between gap-1 rounded-lg bg-skn-cream px-2 py-1"
                       >
-                        <label className="flex flex-1 items-center gap-1.5 text-xs text-slate-700">
+                        <label className="flex flex-1 items-center gap-1.5 text-xs text-skn-ink/75">
                           <input
                             type="checkbox"
                             checked={done}
                             onChange={() => toggleCompletion(item.id, date, done)}
-                            className="h-3.5 w-3.5 rounded border-slate-300 text-rose-500 focus:ring-rose-400"
+                            className="h-3.5 w-3.5 rounded border-skn-sand text-skn-pink-deep focus:ring-skn-pink/40"
                           />
-                          <span className={done ? "text-slate-400 line-through" : ""}>
+                          <span className={done ? "text-skn-ink/35 line-through" : ""}>
                             {item.product?.name ?? "מוצר נמחק"}
                           </span>
                         </label>
                         <button
                           onClick={() => deleteScheduleItem(item.id)}
-                          className="shrink-0 text-xs text-slate-300 hover:text-rose-500"
+                          className="shrink-0 text-xs text-skn-ink/25 hover:text-skn-berry"
                           title="הסרה מהשגרה"
                         >
                           ✕
@@ -193,9 +193,9 @@ export default function ScheduleGrid({
                   })}
 
                   {conflicts.length > 0 && (
-                    <div className="flex flex-col gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5">
+                    <div className="flex flex-col gap-1 rounded-lg border border-skn-honey/30 bg-skn-honey/10 px-2 py-1.5">
                       {conflicts.map((c, i) => (
-                        <p key={i} className="text-[11px] leading-snug text-amber-800">
+                        <p key={i} className="text-[11px] leading-snug text-skn-honey">
                           ⚠️ {INGREDIENT_LABELS[c.a]} + {INGREDIENT_LABELS[c.b]}: {c.reason}
                         </p>
                       ))}
