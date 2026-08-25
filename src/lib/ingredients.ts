@@ -11,6 +11,7 @@ export const INGREDIENT_LABELS: Record<IngredientKey, string> = {
   hyaluronic_acid: "חומצה היאלורונית",
   peptides: "פפטידים",
   hydroquinone: "הידרוקינון",
+  azelaic_acid: "חומצה אזלאית",
 };
 
 export const ALL_INGREDIENTS: IngredientKey[] = Object.keys(

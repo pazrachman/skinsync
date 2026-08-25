@@ -10,7 +10,8 @@ export type IngredientKey =
   | "spf"
   | "hyaluronic_acid"
   | "peptides"
-  | "hydroquinone";
+  | "hydroquinone"
+  | "azelaic_acid";
 
 export interface Product {
   id: string;

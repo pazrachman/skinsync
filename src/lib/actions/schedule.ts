@@ -19,21 +19,25 @@ export async function addScheduleItem(
   if (!user) return { error: "יש להתחבר מחדש." };
 
   const productId = String(formData.get("product_id") ?? "");
-  const timeOfDay = String(formData.get("time_of_day") ?? "") as TimeOfDay;
+  const timesOfDay = formData
+    .getAll("time_of_day")
+    .map((t) => String(t))
+    .filter((t): t is TimeOfDay => t === "morning" || t === "evening");
   const days = formData.getAll("days_of_week").map((d) => Number(d));
 
   if (!productId) return { error: "יש לבחור מוצר או מכשיר." };
-  if (timeOfDay !== "morning" && timeOfDay !== "evening") {
-    return { error: "יש לבחור בוקר או ערב." };
-  }
+  if (timesOfDay.length === 0) return { error: "יש לבחור בוקר, ערב, או שניהם." };
   if (days.length === 0) return { error: "יש לבחור לפחות יום אחד בשבוע." };
 
-  const { error } = await supabase.from("schedule_items").insert({
-    user_id: user.id,
-    product_id: productId,
-    time_of_day: timeOfDay,
-    days_of_week: days,
-  });
+  // שורה נפרדת לכל סלוט שנבחר (אותו מוצר, אותם ימים)
+  const { error } = await supabase.from("schedule_items").insert(
+    timesOfDay.map((timeOfDay) => ({
+      user_id: user.id,
+      product_id: productId,
+      time_of_day: timeOfDay,
+      days_of_week: days,
+    }))
+  );
 
   if (error) return { error: error.message };
 
