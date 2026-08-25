@@ -8,16 +8,28 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* SkinSync design tokens — apothecary/ritual palette.
+     Named after the physical materials of a skincare routine:
+     paper labels, glass bottles, and the ink used to print on them. */
+  --color-skn-paper: #eef1e6;
+  --color-skn-paper-deep: #e2e6d6;
+  --color-skn-ink: #201b16;
+  --color-skn-amber: #9c5f1d;
+  --color-skn-amber-light: #d0954a;
+  --color-skn-wine: #5c2233;
+  --color-skn-sage: #5b6b4f;
+  --color-skn-mist: #dbe0d0;
+
+  --font-sans: var(--font-assistant), "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-frank-ruhl), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    "Segoe UI",
-    system-ui,
-    -apple-system,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: var(--font-sans);
 }
