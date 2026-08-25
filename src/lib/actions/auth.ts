@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export interface AuthFormState {
@@ -23,12 +24,20 @@ export async function signUp(
     return { error: "הסיסמה חייבת להכיל לפחות 6 תווים." };
   }
 
+  const origin = (await headers()).get("origin");
+
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { display_name: displayName || undefined },
+      // אחרי לחיצה על קישור האימות במייל, Supabase יפנה ל-/auth/callback
+      // שיעביר הלאה ל-next הזה — כדי שתופיע הודעת הצלחה בעמוד ההתחברות
+      // במקום מעבר שקט לדשבורד.
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(
+        "/login?verified=1"
+      )}`,
     },
   });
 
@@ -37,6 +46,14 @@ export async function signUp(
   }
 
   revalidatePath("/", "layout");
+
+  // אם האימות במייל נדרש, signUp לא מייצר session מיידי.
+  // הפניה ישירה ל-/dashboard תיבעט בחזרה ל-/login דרך ה-middleware בלי הסבר,
+  // אז מציגים הודעה מפורשת שמבקשת לבדוק את תיבת הדואר.
+  if (!data.session) {
+    redirect("/login?checkEmail=1");
+  }
+
   redirect("/dashboard");
 }
 
@@ -55,6 +72,12 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    if (error.code === "email_not_confirmed") {
+      return {
+        error:
+          "האימייל שלך עדיין לא אומת. בדקי את תיבת הדואר ולחצי על קישור האימות שנשלח אליך.",
+      };
+    }
     return { error: "אימייל או סיסמה שגויים." };
   }
 
