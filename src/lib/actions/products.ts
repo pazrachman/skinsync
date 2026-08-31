@@ -34,6 +34,8 @@ export async function upsertProduct(
   const expiryOverride = String(formData.get("expiry_date_override") ?? "").trim();
   const isDevice = formData.get("is_device") === "on";
   const notes = String(formData.get("notes") ?? "").trim();
+  const skinBenefits = String(formData.get("skin_benefits") ?? "").trim();
+  const avoidMixingWith = String(formData.get("avoid_mixing_with") ?? "").trim();
   const activeIngredients = parseIngredients(formData);
 
   if (!name) {
@@ -54,6 +56,8 @@ export async function upsertProduct(
     expiry_date_override: expiryOverride || null,
     is_device: isDevice,
     notes: notes || null,
+    skin_benefits: skinBenefits || null,
+    avoid_mixing_with: avoidMixingWith || null,
   };
 
   const { error } = id

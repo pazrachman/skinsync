@@ -57,11 +57,21 @@ create table if not exists public.products (
   expiry_date_override date, -- אופציונלי: תאריך תפוגה מודפס על גבי המוצר (עוקף חישוב)
   is_device boolean not null default false, -- מכשיר (למשל מסכת LED) ולא מוצר מתכלה
   notes text,
+  skin_benefits text, -- "יתרונות לעור": 2-3 משפטים על מה המוצר עושה
+  avoid_mixing_with text, -- "לא לערבב עם": רכיבים/מוצרים שלא כדאי לשלב עם זה
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 create index if not exists products_user_id_idx on public.products (user_id);
+
+-- עדכון סכימה: הוספת "יתרונות לעור" ו"לא לערבב עם" לטבלת products קיימת.
+-- אם ה-products שלכם כבר נוצרה לפני שהעמודות האלה נוספו לבלוק שמעליי,
+-- יש להריץ את השורות האלה פעם אחת ב-SQL Editor (בטוח להריץ גם בהתקנה
+-- חדשה — add column if not exists לא נכשל אם העמודה כבר קיימת).
+alter table public.products
+  add column if not exists skin_benefits text,
+  add column if not exists avoid_mixing_with text;
 
 alter table public.products enable row level security;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { X } from "lucide-react";
+import { CircleCheck, TriangleAlert, X } from "lucide-react";
 import { deleteProduct, markProductOpened } from "@/lib/actions/products";
 import ExpiryBadge from "@/components/ExpiryBadge";
 import IngredientTags from "@/components/IngredientTags";
@@ -83,6 +83,30 @@ export default function ProductDetailModal({
           </div>
 
           <IngredientTags ingredients={product.active_ingredients} />
+
+          {product.skin_benefits && (
+            <div className="w-full rounded-xl border border-skn-sage/25 bg-skn-sage/10 p-3 text-right">
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-skn-sage">
+                <CircleCheck className="h-4 w-4 shrink-0" />
+                יתרונות לעור
+              </div>
+              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-skn-ink/70">
+                {product.skin_benefits}
+              </p>
+            </div>
+          )}
+
+          {product.avoid_mixing_with && (
+            <div className="w-full rounded-xl border border-skn-berry/25 bg-skn-berry/10 p-3 text-right">
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-skn-berry">
+                <TriangleAlert className="h-4 w-4 shrink-0" />
+                לא לערבב עם
+              </div>
+              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-skn-ink/70">
+                {product.avoid_mixing_with}
+              </p>
+            </div>
+          )}
 
           {product.notes && (
             <p className="text-sm leading-relaxed text-skn-ink/55">{product.notes}</p>
