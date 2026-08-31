@@ -92,29 +92,21 @@ function Jar({ name, status }: { name: string; status: ExpiryStatus }) {
 }
 
 // צורת מסכת פנים (כמו מסכת בד) — קו מתאר עגול (לא מוארך כמו ביצה) עם
-// חור פה בלבד, בלי חורי עיניים. אותה צורה משמשת גם למדף "מסכות" וגם
-// למכשירי LED (שבפועל הם מסכות עם נקודות אור).
-function FaceMask({
-  toneClassName,
-  withLights = false,
-}: {
-  toneClassName: string;
-  withLights?: boolean;
-}) {
+// חורי עיניים וחור פה. אותה צורה משמשת גם למדף "מסכות" וגם למכשירי
+// LED — בלי נקודות אור נפרדות, רק גוון הרקע מבדיל ביניהם.
+function FaceMask({ toneClassName }: { toneClassName: string }) {
   return (
     <div
       className={`relative h-20 w-16 border ${toneClassName}`}
       style={{ borderRadius: "50%" }}
     >
+      {/* חורי עיניים */}
+      <div className="absolute left-1/2 top-6 flex -translate-x-1/2 gap-3">
+        <span className="h-2.5 w-3.5 rounded-full bg-skn-ink/45" />
+        <span className="h-2.5 w-3.5 rounded-full bg-skn-ink/45" />
+      </div>
       {/* חור פה */}
       <span className="absolute bottom-5 left-1/2 h-2 w-3.5 -translate-x-1/2 rounded-full bg-skn-ink/45" />
-      {withLights && (
-        <>
-          <span className="absolute right-2.5 top-7 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
-          <span className="absolute left-2.5 top-7 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
-          <span className="absolute bottom-2 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-skn-pink-deep" />
-        </>
-      )}
     </div>
   );
 }
@@ -127,7 +119,7 @@ function Device({ name }: { name: string }) {
   if (kind === "led") {
     return (
       <div className="flex w-24 shrink-0 flex-col items-center gap-1.5" aria-hidden>
-        <FaceMask toneClassName="border-skn-sand bg-skn-sand/40" withLights />
+        <FaceMask toneClassName="border-skn-sand bg-skn-sand/40" />
         <Caption name={name} />
       </div>
     );
