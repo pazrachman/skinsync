@@ -155,10 +155,10 @@ export default function InventoryManager({ products }: { products: Product[] }) 
           >
             <div className="m-3 h-[calc(100%-1.5rem)] rounded-md border border-skn-ink/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25),inset_0_3px_10px_rgba(58,44,36,0.2)]" />
             {/* ידית מתכת עם שני ברגי הרכבה */}
-            <div className="absolute right-4 top-24 flex flex-col items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full bg-skn-ink/60 shadow-sm" />
-              <span className="h-24 w-4 rounded-full bg-gradient-to-l from-skn-ink/35 via-skn-ink/85 to-skn-ink/35 shadow-md" />
-              <span className="h-3 w-3 rounded-full bg-skn-ink/60 shadow-sm" />
+            <div className="absolute right-4 top-40 flex flex-col items-center gap-1.5">
+              <span className="h-3.5 w-3.5 rounded-full bg-skn-ink/60 shadow-sm" />
+              <span className="h-28 w-5 rounded-full bg-gradient-to-l from-skn-ink/35 via-skn-ink/85 to-skn-ink/35 shadow-md" />
+              <span className="h-3.5 w-3.5 rounded-full bg-skn-ink/60 shadow-sm" />
             </div>
           </div>
 
@@ -168,10 +168,10 @@ export default function InventoryManager({ products }: { products: Product[] }) 
             className="skn-cabinet-door-right skn-wood-panel pointer-events-none absolute inset-y-0 right-0 z-10 w-1/2 border-r-2 border-skn-sand"
           >
             <div className="m-3 h-[calc(100%-1.5rem)] rounded-md border border-skn-ink/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25),inset_0_3px_10px_rgba(58,44,36,0.2)]" />
-            <div className="absolute left-4 top-24 flex flex-col items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full bg-skn-ink/60 shadow-sm" />
-              <span className="h-24 w-4 rounded-full bg-gradient-to-l from-skn-ink/35 via-skn-ink/85 to-skn-ink/35 shadow-md" />
-              <span className="h-3 w-3 rounded-full bg-skn-ink/60 shadow-sm" />
+            <div className="absolute left-4 top-40 flex flex-col items-center gap-1.5">
+              <span className="h-3.5 w-3.5 rounded-full bg-skn-ink/60 shadow-sm" />
+              <span className="h-28 w-5 rounded-full bg-gradient-to-l from-skn-ink/35 via-skn-ink/85 to-skn-ink/35 shadow-md" />
+              <span className="h-3.5 w-3.5 rounded-full bg-skn-ink/60 shadow-sm" />
             </div>
           </div>
         </div>
