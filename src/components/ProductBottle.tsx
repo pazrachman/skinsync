@@ -91,9 +91,9 @@ function Jar({ name, status }: { name: string; status: ExpiryStatus }) {
   );
 }
 
-// צורת מסכת פנים (כמו מסכת בד) — קו מתאר של פנים עם שני חורי עיניים.
-// אותה צורה משמשת גם למדף "מסכות" וגם למכשירי LED (שבפועל הם מסכות
-// עם נקודות אור).
+// צורת מסכת פנים (כמו מסכת בד) — קו מתאר עגול (לא מוארך כמו ביצה) עם
+// חור פה בלבד, בלי חורי עיניים. אותה צורה משמשת גם למדף "מסכות" וגם
+// למכשירי LED (שבפועל הם מסכות עם נקודות אור).
 function FaceMask({
   toneClassName,
   withLights = false,
@@ -103,19 +103,16 @@ function FaceMask({
 }) {
   return (
     <div
-      className={`relative flex h-20 w-16 items-start justify-center border px-2 pt-5 ${toneClassName}`}
-      style={{ borderRadius: "48% 48% 42% 42% / 58% 58% 32% 32%" }}
+      className={`relative h-20 w-16 border ${toneClassName}`}
+      style={{ borderRadius: "50%" }}
     >
-      {/* חורי עיניים */}
-      <div className="flex gap-3">
-        <span className="h-2.5 w-3.5 rounded-full bg-skn-ink/45" />
-        <span className="h-2.5 w-3.5 rounded-full bg-skn-ink/45" />
-      </div>
+      {/* חור פה */}
+      <span className="absolute bottom-5 left-1/2 h-2 w-3.5 -translate-x-1/2 rounded-full bg-skn-ink/45" />
       {withLights && (
         <>
-          <span className="absolute right-2.5 top-10 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
-          <span className="absolute left-2.5 top-10 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
-          <span className="absolute bottom-3 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-skn-pink-deep" />
+          <span className="absolute right-2.5 top-7 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
+          <span className="absolute left-2.5 top-7 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
+          <span className="absolute bottom-2 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-skn-pink-deep" />
         </>
       )}
     </div>
