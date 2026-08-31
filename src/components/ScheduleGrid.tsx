@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useRef, useState } from "react";
-import { Droplet } from "lucide-react";
+import { Droplet, Moon, Sun } from "lucide-react";
 import Checkbox from "@/components/Checkbox";
 import EmptyState from "@/components/EmptyState";
 import MiniBottleIcon from "@/components/MiniBottleIcon";
@@ -16,16 +16,27 @@ import { INGREDIENT_LABELS } from "@/lib/ingredients";
 import type { Product, ScheduleCompletion, ScheduleItem, TimeOfDay } from "@/lib/types";
 
 const DAY_LABELS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
-const SLOTS: { key: TimeOfDay; label: string }[] = [
-  { key: "morning", label: "בוקר" },
-  { key: "evening", label: "ערב" },
+const SLOTS: { key: TimeOfDay; label: string; icon: typeof Sun }[] = [
+  { key: "morning", label: "בוקר", icon: Sun },
+  { key: "evening", label: "ערב", icon: Moon },
 ];
 
 // גוון הבקבוקון ליד כל פריט בשגרה נושא את הזמן ביום — אותם צבעים כמו קו
-// "בוקר → ערב" בעמוד ההתחברות.
+// "בוקר → ערב" בעמוד ההתחברות. אותם גוונים גם צובעים את פאנל המשבצת של
+// כל זמן ביום, כדי שהתא לא יהיה שטח לבן ריק אלא ייצג חזותית בוקר/ערב.
 const SLOT_BOTTLE_FILL: Record<TimeOfDay, string> = {
   morning: "fill-skn-peach/50",
   evening: "fill-skn-pink/40",
+};
+
+const SLOT_PANEL: Record<TimeOfDay, string> = {
+  morning: "bg-skn-peach/10",
+  evening: "bg-skn-pink/8",
+};
+
+const SLOT_ICON: Record<TimeOfDay, string> = {
+  morning: "text-skn-peach",
+  evening: "text-skn-pink-deep",
 };
 
 const initialState: ScheduleFormState = { error: null };
@@ -175,16 +186,21 @@ export default function ScheduleGrid({
         </EmptyState>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
+      {/* פריצה מרוחב עמוד האפליקציה (max-w-5xl) כדי שהריבועים ינצלו את
+          רוחב המסך במקום להצטופף באמצע — רק חלק הרשת, לא כותרת העמוד. */}
+      <div className="w-screen mx-[calc(50%-50vw)] px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto grid max-w-[100rem] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-7">
         {weekDates.map((date, dayIdx) => {
           const isToday = date === todayIso;
           const dayItems = scheduleItems.filter((it) => it.days_of_week.includes(dayIdx));
           const dayDone = dayItems.filter((it) => completedSet.has(`${it.id}_${date}`)).length;
 
+          const dayComplete = dayItems.length > 0 && dayDone === dayItems.length;
+
           return (
           <div
             key={date}
-            className={`flex flex-col gap-2 overflow-hidden rounded-2xl border bg-gradient-to-b p-3 shadow-sm transition hover:shadow-md ${
+            className={`flex flex-col gap-3 overflow-hidden rounded-3xl border bg-gradient-to-b p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
               isToday
                 ? "border-skn-pink-deep/40 from-skn-pink/10 to-white"
                 : "border-skn-sand from-skn-cream-deep/50 to-white"
@@ -192,12 +208,12 @@ export default function ScheduleGrid({
           >
             <div
               aria-hidden
-              className="-mx-3 -mt-3 h-1 bg-gradient-to-l from-skn-peach to-skn-pink-deep"
+              className="-mx-4 -mt-4 h-1.5 bg-gradient-to-l from-skn-peach to-skn-pink-deep"
             />
 
             <div className="flex items-center justify-between gap-1">
               <div className="text-center flex-1">
-                <p className="flex items-center justify-center gap-1.5 text-sm font-semibold text-skn-ink">
+                <p className="flex items-center justify-center gap-1.5 text-base font-semibold text-skn-ink">
                   {DAY_LABELS[dayIdx]}
                   {isToday && (
                     <span className="rounded-full bg-skn-pink-deep px-1.5 py-0.5 font-mono text-[9px] font-normal text-white">
@@ -210,7 +226,13 @@ export default function ScheduleGrid({
                 </p>
               </div>
               {dayItems.length > 0 && (
-                <span className="shrink-0 font-mono text-[10px] text-skn-ink/40">
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold ${
+                    dayComplete
+                      ? "bg-skn-sage/20 text-skn-sage"
+                      : "bg-skn-cream text-skn-ink/45"
+                  }`}
+                >
                   {dayDone}/{dayItems.length}
                 </span>
               )}
@@ -224,11 +246,20 @@ export default function ScheduleGrid({
                 items.flatMap((it) => it.product?.active_ingredients ?? [])
               );
 
-              return (
-                <div key={slot.key} className="flex flex-col gap-1.5 border-t border-skn-sand/60 pt-2 first:border-t-0 first:pt-0">
-                  <p className="text-xs font-semibold text-skn-ink/45">{slot.label}</p>
+              const SlotIcon = slot.icon;
 
-                  {items.length === 0 && <p className="text-xs text-skn-ink/25">—</p>}
+              return (
+                <div key={slot.key} className={`flex flex-col gap-1.5 rounded-2xl p-2.5 ${SLOT_PANEL[slot.key]}`}>
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-skn-ink/55">
+                    <SlotIcon className={`h-3.5 w-3.5 ${SLOT_ICON[slot.key]}`} />
+                    {slot.label}
+                  </p>
+
+                  {items.length === 0 && (
+                    <p className="rounded-lg border border-dashed border-skn-ink/10 px-2 py-1.5 text-center text-[11px] text-skn-ink/30">
+                      אין מוצר משובץ
+                    </p>
+                  )}
 
                   {items.map((item) => {
                     const key = `${item.id}_${date}`;
@@ -236,7 +267,7 @@ export default function ScheduleGrid({
                     return (
                       <div
                         key={item.id}
-                        className="flex items-center justify-between gap-1 rounded-lg bg-skn-cream px-2 py-1"
+                        className="flex items-center justify-between gap-1.5 rounded-xl bg-white/70 px-2.5 py-1.5 shadow-sm transition hover:bg-white"
                       >
                         <MiniBottleIcon
                           fillClassName={SLOT_BOTTLE_FILL[slot.key]}
@@ -275,6 +306,7 @@ export default function ScheduleGrid({
           </div>
           );
         })}
+      </div>
       </div>
     </div>
   );

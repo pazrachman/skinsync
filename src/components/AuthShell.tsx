@@ -98,7 +98,7 @@ export default function AuthShell({
               className="skn-animate-fade-up max-w-[22ch] font-display text-2xl leading-snug text-skn-ink/85"
               style={delay(320)}
             >
-              כל בקבוקון בזמן שלו — בוקר וערב.
+              כל בקבוקון בזמן שלו - בוקר וערב.
             </p>
 
             <div className="flex items-center gap-3" dir="rtl">
