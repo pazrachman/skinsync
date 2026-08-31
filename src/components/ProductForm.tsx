@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import Checkbox from "@/components/Checkbox";
 import { upsertProduct, type ProductFormState } from "@/lib/actions/products";
-import { ALL_INGREDIENTS, INGREDIENT_LABELS } from "@/lib/ingredients";
+import { INGREDIENT_GROUPS, INGREDIENT_LABELS } from "@/lib/ingredients";
 import { suggestProductNotes } from "@/lib/productSuggestions";
 import type { IngredientKey, Product } from "@/lib/types";
 
@@ -163,35 +163,44 @@ export default function ProductForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <label className="text-sm font-medium text-skn-ink/70">רכיבים פעילים</label>
-        <div className="flex flex-wrap gap-x-2 gap-y-2">
-          {ALL_INGREDIENTS.map((ing) => {
-            const isSuggested = suggestedIngredients.has(ing);
-            return (
-              <span
-                key={ing}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition-colors ${
-                  isSuggested ? "bg-skn-honey/10 ring-1 ring-skn-honey/50" : ""
-                }`}
-              >
-                <Checkbox
-                  name="active_ingredients"
-                  value={ing}
-                  defaultChecked={product?.active_ingredients?.includes(ing) ?? false}
-                  tone="lilac"
-                  label={INGREDIENT_LABELS[ing]}
-                  labelClassName="text-sm text-skn-ink/65"
-                  onChange={() => clearSuggested(ing)}
-                />
-                {isSuggested && (
-                  <span className="rounded-full bg-skn-honey/20 px-1.5 py-0.5 text-[10px] font-medium text-skn-honey">
-                    הצעה — לא אושר
-                  </span>
-                )}
-              </span>
-            );
-          })}
+        <div className="flex flex-col gap-2.5 rounded-xl border border-skn-sand/70 p-3">
+          {INGREDIENT_GROUPS.map((group) => (
+            <div key={group.id} className="flex flex-col gap-1.5">
+              <p className="font-mono text-[11px] tracking-wide text-skn-ink/40">
+                {group.label}
+              </p>
+              <div className="flex flex-wrap gap-x-2 gap-y-1.5">
+                {group.ingredients.map((ing) => {
+                  const isSuggested = suggestedIngredients.has(ing);
+                  return (
+                    <span
+                      key={ing}
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition-colors ${
+                        isSuggested ? "bg-skn-honey/10 ring-1 ring-skn-honey/50" : ""
+                      }`}
+                    >
+                      <Checkbox
+                        name="active_ingredients"
+                        value={ing}
+                        defaultChecked={product?.active_ingredients?.includes(ing) ?? false}
+                        tone="lilac"
+                        label={INGREDIENT_LABELS[ing]}
+                        labelClassName="text-sm text-skn-ink/65"
+                        onChange={() => clearSuggested(ing)}
+                      />
+                      {isSuggested && (
+                        <span className="rounded-full bg-skn-honey/20 px-1.5 py-0.5 text-[10px] font-medium text-skn-honey">
+                          הצעה — לא אושר
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

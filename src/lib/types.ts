@@ -1,17 +1,55 @@
 export type TimeOfDay = "morning" | "evening";
 
 export type IngredientKey =
-  | "retinol"
-  | "vitamin_c"
-  | "niacinamide"
+  // חומצות
   | "aha"
   | "bha"
-  | "benzoyl_peroxide"
-  | "spf"
-  | "hyaluronic_acid"
+  | "glycolic_acid"
+  | "mandelic_acid"
+  | "lactic_acid"
+  | "tartaric_acid"
+  | "pha"
+  | "lha"
+  | "azelaic_acid"
+  // ויטמינים ונוגדי חמצון
+  | "vitamin_c"
+  | "vitamin_e"
+  | "retinol"
+  | "retinaldehyde"
+  | "niacinamide"
+  | "coenzyme_q10"
+  | "green_tea"
+  | "ferulic_acid"
+  | "resveratrol"
+  // פפטידים ותומכי מבנה
   | "peptides"
+  | "collagen"
+  | "elastin"
+  | "copper_peptides"
+  // לחות ומחסום עור
+  | "hyaluronic_acid"
+  | "glycerin"
+  | "squalane"
+  | "jojoba_oil"
+  | "ceramides"
+  | "aloe_vera"
+  | "panthenol"
+  // הבהרה ופיגמנטציה
   | "hydroquinone"
-  | "azelaic_acid";
+  | "arbutin"
+  | "alpha_arbutin"
+  | "tranexamic_acid"
+  | "kojic_acid"
+  | "licorice_root"
+  // אקנה וטיפול ממוקד
+  | "benzoyl_peroxide"
+  | "sulfur"
+  | "tea_tree_oil"
+  | "zinc"
+  // הגנה מהשמש
+  | "spf"
+  | "zinc_oxide"
+  | "titanium_dioxide";
 
 export interface Product {
   id: string;

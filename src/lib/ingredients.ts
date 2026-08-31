@@ -1,22 +1,144 @@
 import type { IngredientKey, Product } from "./types";
 
 export const INGREDIENT_LABELS: Record<IngredientKey, string> = {
-  retinol: "רטינול",
-  vitamin_c: "ויטמין C",
-  niacinamide: "ניאצינאמיד",
-  aha: "AHA (חומצות פירות)",
+  // חומצות
+  aha: "AHA (חומצות פירות, כללי)",
   bha: "BHA (חומצה סליצילית)",
-  benzoyl_peroxide: "בנזואיל פרוקסייד",
-  spf: "קרם הגנה SPF",
-  hyaluronic_acid: "חומצה היאלורונית",
-  peptides: "פפטידים",
-  hydroquinone: "הידרוקינון",
+  glycolic_acid: "חומצה גליקולית",
+  mandelic_acid: "חומצה מנדלית",
+  lactic_acid: "חומצה לקטית",
+  tartaric_acid: "חומצה טרטרית",
+  pha: "PHA (פוליהידרוקסי)",
+  lha: "LHA",
   azelaic_acid: "חומצה אזלאית",
+  // ויטמינים ונוגדי חמצון
+  vitamin_c: "ויטמין C",
+  vitamin_e: "ויטמין E",
+  retinol: "רטינול",
+  retinaldehyde: "רטינאלדהיד / רטינל",
+  niacinamide: "ניאצינאמיד",
+  coenzyme_q10: "קואנזים Q10",
+  green_tea: "תה ירוק (EGCG)",
+  ferulic_acid: "פרולה אסיד",
+  resveratrol: "רזברטרול",
+  // פפטידים ותומכי מבנה
+  peptides: "פפטידים",
+  collagen: "קולגן",
+  elastin: "אלסטין",
+  copper_peptides: "קופר פפטיד (נחושת)",
+  // לחות ומחסום עור
+  hyaluronic_acid: "חומצה היאלורונית",
+  glycerin: "גליצרין",
+  squalane: "סקוואלן",
+  jojoba_oil: "שמן ג'וג'ובה",
+  ceramides: "צרמידים",
+  aloe_vera: "אלוורה",
+  panthenol: "פאנתנול (ויטמין B5)",
+  // הבהרה ופיגמנטציה
+  hydroquinone: "הידרוקינון",
+  arbutin: "ארבוטין",
+  alpha_arbutin: "אלפא ארבוטין",
+  tranexamic_acid: "טרנקסמיק אסיד",
+  kojic_acid: "קוג'יק אסיד",
+  licorice_root: "ליקריץ רוט (שורש שוש)",
+  // אקנה וטיפול ממוקד
+  benzoyl_peroxide: "בנזואיל פרוקסייד",
+  sulfur: "גופרית",
+  tea_tree_oil: "שמן עץ התה",
+  zinc: "אבץ (זינק)",
+  // הגנה מהשמש
+  spf: "קרם הגנה SPF",
+  zinc_oxide: "זינק אוקסייד",
+  titanium_dioxide: "טיטניום דיוקסייד",
 };
 
 export const ALL_INGREDIENTS: IngredientKey[] = Object.keys(
   INGREDIENT_LABELS
 ) as IngredientKey[];
+
+export interface IngredientGroup {
+  id: string;
+  label: string;
+  ingredients: IngredientKey[];
+}
+
+/**
+ * קיבוץ הרכיבים לקטגוריות הגיוניות לתצוגה בטופס — כדי שרשימה של עשרות
+ * רכיבים לא תיראה כמו גוש אחד עמוס. לא משפיע על האחסון או על הזיהוי
+ * האוטומטי, רק על הסידור הוויזואלי.
+ */
+export const INGREDIENT_GROUPS: IngredientGroup[] = [
+  {
+    id: "acids",
+    label: "חומצות",
+    ingredients: [
+      "aha",
+      "glycolic_acid",
+      "mandelic_acid",
+      "lactic_acid",
+      "tartaric_acid",
+      "pha",
+      "bha",
+      "lha",
+      "azelaic_acid",
+    ],
+  },
+  {
+    id: "vitamins",
+    label: "ויטמינים ונוגדי חמצון",
+    ingredients: [
+      "vitamin_c",
+      "vitamin_e",
+      "retinol",
+      "retinaldehyde",
+      "niacinamide",
+      "coenzyme_q10",
+      "green_tea",
+      "ferulic_acid",
+      "resveratrol",
+    ],
+  },
+  {
+    id: "peptides",
+    label: "פפטידים ותומכי מבנה",
+    ingredients: ["peptides", "collagen", "elastin", "copper_peptides"],
+  },
+  {
+    id: "hydration",
+    label: "לחות ומחסום עור",
+    ingredients: [
+      "hyaluronic_acid",
+      "glycerin",
+      "squalane",
+      "jojoba_oil",
+      "ceramides",
+      "aloe_vera",
+      "panthenol",
+    ],
+  },
+  {
+    id: "brightening",
+    label: "הבהרה ופיגמנטציה",
+    ingredients: [
+      "hydroquinone",
+      "arbutin",
+      "alpha_arbutin",
+      "tranexamic_acid",
+      "kojic_acid",
+      "licorice_root",
+    ],
+  },
+  {
+    id: "acne",
+    label: "אקנה וטיפול ממוקד",
+    ingredients: ["benzoyl_peroxide", "sulfur", "tea_tree_oil", "zinc"],
+  },
+  {
+    id: "protection",
+    label: "הגנה מהשמש",
+    ingredients: ["spf", "zinc_oxide", "titanium_dioxide"],
+  },
+];
 
 interface ConflictRule {
   pair: [IngredientKey, IngredientKey];
