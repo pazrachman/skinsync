@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import Checkbox from "@/components/Checkbox";
 import { upsertProduct, type ProductFormState } from "@/lib/actions/products";
@@ -21,6 +21,11 @@ export default function ProductForm({
   const formRef = useRef<HTMLFormElement>(null);
   const skinBenefitsRef = useRef<HTMLTextAreaElement>(null);
   const avoidMixingRef = useRef<HTMLTextAreaElement>(null);
+  // רכיבים פעילים שסומנו אוטומטית על ידי "הצע תיאור אוטומטי" (זוהו משם/
+  // מותג המוצר) וטרם נבדקו ידנית — מסומנים בטופס עד שהמשתמשת נוגעת בהם.
+  const [suggestedIngredients, setSuggestedIngredients] = useState<Set<IngredientKey>>(
+    new Set()
+  );
 
   // כשההגשה הצליחה (אין שגיאה ואין יותר pending) — סוגרים את הטופס
   const succeeded = !pending && state.error === null && state !== initialState;
@@ -31,7 +36,9 @@ export default function ProductForm({
 
   // מייצר טיוטה ל"יתרונות לעור" ו"לא לערבב עם" מהמצב הנוכחי של הטופס
   // (שם, מותג, קטגוריה, רכיבים פעילים שמסומנים כרגע) — לא שולח את הטופס,
-  // רק ממלא את שני השדות כדי שאפשר יהיה לערוך ולאשר לפני שמירה.
+  // רק ממלא את השדות כדי שאפשר יהיה לערוך ולאשר לפני שמירה. אם לא סומן
+  // אף רכיב פעיל, מנסה לזהות רכיב סביר משם/מותג המוצר (מילות מפתח בלבד,
+  // בלי חיפוש אינטרנט) ומסמן אותו כטיוטה שטרם אושרה.
   function handleSuggest() {
     if (!formRef.current) return;
     const fd = new FormData(formRef.current);
@@ -41,8 +48,32 @@ export default function ProductForm({
       category: String(fd.get("category") ?? ""),
       activeIngredients: fd.getAll("active_ingredients").map((v) => String(v)) as IngredientKey[],
     });
+
+    if (suggestion.detectedIngredients.length > 0) {
+      const inputs = formRef.current.querySelectorAll<HTMLInputElement>(
+        'input[name="active_ingredients"]'
+      );
+      inputs.forEach((input) => {
+        if (suggestion.detectedIngredients.includes(input.value as IngredientKey)) {
+          input.checked = true;
+        }
+      });
+    }
+    setSuggestedIngredients(new Set(suggestion.detectedIngredients));
+
     if (skinBenefitsRef.current) skinBenefitsRef.current.value = suggestion.skinBenefits;
     if (avoidMixingRef.current) avoidMixingRef.current.value = suggestion.avoidMixingWith;
+  }
+
+  // ברגע שהמשתמשת נוגעת ידנית ברכיב שסומן אוטומטית — היא בדקה אותו,
+  // כך שסימון ה"הצעה" מוסר (בין אם השאירה אותו מסומן ובין אם ביטלה).
+  function clearSuggested(ing: IngredientKey) {
+    setSuggestedIngredients((prev) => {
+      if (!prev.has(ing)) return prev;
+      const next = new Set(prev);
+      next.delete(ing);
+      return next;
+    });
   }
 
   return (
@@ -134,18 +165,33 @@ export default function ProductForm({
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-skn-ink/70">רכיבים פעילים</label>
-        <div className="flex flex-wrap gap-x-4 gap-y-2">
-          {ALL_INGREDIENTS.map((ing) => (
-            <Checkbox
-              key={ing}
-              name="active_ingredients"
-              value={ing}
-              defaultChecked={product?.active_ingredients?.includes(ing) ?? false}
-              tone="lilac"
-              label={INGREDIENT_LABELS[ing]}
-              labelClassName="text-sm text-skn-ink/65"
-            />
-          ))}
+        <div className="flex flex-wrap gap-x-2 gap-y-2">
+          {ALL_INGREDIENTS.map((ing) => {
+            const isSuggested = suggestedIngredients.has(ing);
+            return (
+              <span
+                key={ing}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition-colors ${
+                  isSuggested ? "bg-skn-honey/10 ring-1 ring-skn-honey/50" : ""
+                }`}
+              >
+                <Checkbox
+                  name="active_ingredients"
+                  value={ing}
+                  defaultChecked={product?.active_ingredients?.includes(ing) ?? false}
+                  tone="lilac"
+                  label={INGREDIENT_LABELS[ing]}
+                  labelClassName="text-sm text-skn-ink/65"
+                  onChange={() => clearSuggested(ing)}
+                />
+                {isSuggested && (
+                  <span className="rounded-full bg-skn-honey/20 px-1.5 py-0.5 text-[10px] font-medium text-skn-honey">
+                    הצעה — לא אושר
+                  </span>
+                )}
+              </span>
+            );
+          })}
         </div>
       </div>
 
@@ -164,8 +210,11 @@ export default function ProductForm({
           </button>
         </div>
         <p className="text-xs text-skn-ink/40">
-          הטיוטה נוצרת מהרכיבים הפעילים שסימנת למעלה — אפשר לערוך אותה
-          בחופשיות. שום דבר לא נשמר עד שלוחצים על &ldquo;שמירה&rdquo;.
+          הטיוטה נוצרת מהרכיבים הפעילים שסימנת למעלה. אם לא סימנת אף רכיב,
+          ננסה לזהות רכיב סביר משם/מותג המוצר (לפי מילות מפתח בלבד, בלי
+          חיפוש אינטרנט) ונסמן אותו למעלה בצהוב עד שתבדקי ותאשרי אותו.
+          אפשר לערוך הכל בחופשיות — שום דבר לא נשמר עד שלוחצים על
+          &ldquo;שמירה&rdquo;.
         </p>
 
         <div className="flex flex-col gap-1">
