@@ -126,11 +126,29 @@ body {
   animation: skn-drip 4.5s ease-in-out infinite;
 }
 
+/* Products "settling" onto a shelf when the cabinet renders — a short
+   drop-and-land, staggered per item. */
+@keyframes skn-settle {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skn-animate-settle {
+  animation: skn-settle 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skn-animate-fade-up,
   .skn-animate-draw-line,
   .skn-animate-drift,
-  .skn-animate-float {
+  .skn-animate-float,
+  .skn-animate-settle {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
