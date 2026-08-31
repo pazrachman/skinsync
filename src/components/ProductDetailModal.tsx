@@ -96,17 +96,15 @@ export default function ProductDetailModal({
             </div>
           )}
 
-          {product.avoid_mixing_with && (
-            <div className="w-full rounded-xl border border-skn-berry/25 bg-skn-berry/10 p-3 text-right">
-              <div className="flex items-center gap-1.5 text-sm font-semibold text-skn-berry">
-                <TriangleAlert className="h-4 w-4 shrink-0" />
-                לא לערבב עם
-              </div>
-              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-skn-ink/70">
-                {product.avoid_mixing_with}
-              </p>
+          <div className="w-full rounded-xl border border-skn-berry/25 bg-skn-berry/10 p-3 text-right">
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-skn-berry">
+              <TriangleAlert className="h-4 w-4 shrink-0" />
+              לא לערבב עם
             </div>
-          )}
+            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-skn-ink/70">
+              {product.avoid_mixing_with?.trim() || "לא ידוע על התנגשות עם מוצר אחר"}
+            </p>
+          </div>
 
           {product.notes && (
             <p className="text-sm leading-relaxed text-skn-ink/55">{product.notes}</p>
