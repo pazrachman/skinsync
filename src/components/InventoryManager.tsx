@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Droplet } from "lucide-react";
 import { deleteProduct, markProductOpened } from "@/lib/actions/products";
+import EmptyState from "@/components/EmptyState";
 import ExpiryBadge from "@/components/ExpiryBadge";
 import IngredientTags from "@/components/IngredientTags";
 import ProductForm from "@/components/ProductForm";
@@ -63,16 +65,16 @@ export default function InventoryManager({ products }: { products: Product[] }) 
       )}
 
       {sorted.length === 0 && !formOpen && (
-        <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-8 text-center text-sm text-skn-ink/55">
+        <EmptyState icon={Droplet}>
           עדיין לא הוספת מוצרים. לחצי על &ldquo;הוספת מוצר&rdquo; כדי להתחיל.
-        </p>
+        </EmptyState>
       )}
 
       <ul className="flex flex-col gap-3">
         {sorted.map((p) => (
           <li
             key={p.id}
-            className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">

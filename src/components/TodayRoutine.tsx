@@ -1,5 +1,8 @@
 "use client";
 
+import { Droplet } from "lucide-react";
+import Checkbox from "@/components/Checkbox";
+import EmptyState from "@/components/EmptyState";
 import { toggleCompletion } from "@/lib/actions/schedule";
 import { findConflicts, INGREDIENT_LABELS } from "@/lib/ingredients";
 import type { ScheduleItem, TimeOfDay } from "@/lib/types";
@@ -20,9 +23,9 @@ export default function TodayRoutine({
 }) {
   if (items.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-6 text-center text-sm text-skn-ink/55">
+      <EmptyState icon={Droplet}>
         אין פריטים משובצים להיום. אפשר להוסיף בעמוד &ldquo;שגרה שבועית&rdquo;.
-      </p>
+      </EmptyState>
     );
   }
 
@@ -43,17 +46,12 @@ export default function TodayRoutine({
                 const done = completedIds.has(item.id);
                 return (
                   <li key={item.id}>
-                    <label className="flex items-center gap-2 text-sm text-skn-ink/80">
-                      <input
-                        type="checkbox"
-                        checked={done}
-                        onChange={() => toggleCompletion(item.id, date, done)}
-                        className="h-4 w-4 rounded border-skn-sand text-skn-pink-deep focus:ring-skn-pink/40"
-                      />
-                      <span className={done ? "text-skn-ink/35 line-through" : ""}>
-                        {item.product?.name ?? "מוצר נמחק"}
-                      </span>
-                    </label>
+                    <Checkbox
+                      checked={done}
+                      onChange={() => toggleCompletion(item.id, date, done)}
+                      label={item.product?.name ?? "מוצר נמחק"}
+                      labelClassName={`text-sm ${done ? "text-skn-ink/35 line-through" : "text-skn-ink/80"}`}
+                    />
                   </li>
                 );
               })}

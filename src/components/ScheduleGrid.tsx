@@ -1,6 +1,9 @@
 "use client";
 
 import { useActionState, useMemo, useRef, useState } from "react";
+import { Droplet } from "lucide-react";
+import Checkbox from "@/components/Checkbox";
+import EmptyState from "@/components/EmptyState";
 import {
   addScheduleItem,
   deleteScheduleItem,
@@ -73,15 +76,14 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
           <label className="text-sm font-medium text-skn-ink/70">זמן ביום</label>
           <div className="flex flex-wrap gap-x-3 gap-y-1 pt-2">
             {SLOTS.map((slot) => (
-              <label key={slot.key} className="flex items-center gap-1.5 text-sm text-skn-ink/65">
-                <input
-                  type="checkbox"
-                  name="time_of_day"
-                  value={slot.key}
-                  defaultChecked={slot.key === "morning"}
-                />
-                {slot.label}
-              </label>
+              <Checkbox
+                key={slot.key}
+                name="time_of_day"
+                value={slot.key}
+                defaultChecked={slot.key === "morning"}
+                label={slot.label}
+                labelClassName="text-sm text-skn-ink/65"
+              />
             ))}
           </div>
         </div>
@@ -100,10 +102,13 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
         </div>
         <div ref={daysContainerRef} className="flex flex-wrap gap-x-3 gap-y-1">
           {DAY_LABELS.map((label, idx) => (
-            <label key={idx} className="flex items-center gap-1.5 text-sm text-skn-ink/65">
-              <input type="checkbox" name="days_of_week" value={idx} />
-              {label}
-            </label>
+            <Checkbox
+              key={idx}
+              name="days_of_week"
+              value={idx}
+              label={label}
+              labelClassName="text-sm text-skn-ink/65"
+            />
           ))}
         </div>
       </div>
@@ -156,14 +161,14 @@ export default function ScheduleGrid({
       </div>
 
       {scheduleItems.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-8 text-center text-sm text-skn-ink/55">
+        <EmptyState icon={Droplet}>
           עדיין לא שיבצת מוצרים לשגרה. השתמשי ב&ldquo;שיבוץ מוצר לשגרה&rdquo; כדי להתחיל.
-        </p>
+        </EmptyState>
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
         {weekDates.map((date, dayIdx) => (
-          <div key={date} className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-3 shadow-sm">
+          <div key={date} className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-3 shadow-sm transition hover:shadow-md">
             <div className="text-center">
               <p className="text-sm font-semibold text-skn-ink">{DAY_LABELS[dayIdx]}</p>
               <p className="text-xs text-skn-ink/40">
@@ -193,17 +198,13 @@ export default function ScheduleGrid({
                         key={item.id}
                         className="flex items-center justify-between gap-1 rounded-lg bg-skn-cream px-2 py-1"
                       >
-                        <label className="flex flex-1 items-center gap-1.5 text-xs text-skn-ink/75">
-                          <input
-                            type="checkbox"
-                            checked={done}
-                            onChange={() => toggleCompletion(item.id, date, done)}
-                            className="h-3.5 w-3.5 rounded border-skn-sand text-skn-pink-deep focus:ring-skn-pink/40"
-                          />
-                          <span className={done ? "text-skn-ink/35 line-through" : ""}>
-                            {item.product?.name ?? "מוצר נמחק"}
-                          </span>
-                        </label>
+                        <Checkbox
+                          checked={done}
+                          onChange={() => toggleCompletion(item.id, date, done)}
+                          className="flex-1"
+                          label={item.product?.name ?? "מוצר נמחק"}
+                          labelClassName={`text-xs ${done ? "text-skn-ink/35 line-through" : "text-skn-ink/75"}`}
+                        />
                         <button
                           onClick={() => deleteScheduleItem(item.id)}
                           className="shrink-0 text-xs text-skn-ink/25 hover:text-skn-berry"

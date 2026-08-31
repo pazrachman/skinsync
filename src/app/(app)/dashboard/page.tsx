@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { CheckCircle2, Sparkles } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import TodayRoutine from "@/components/TodayRoutine";
 import { EXPIRY_STATUS_COLOR, EXPIRY_STATUS_LABEL, getExpiryInfo, getReminderDueInfo } from "@/lib/expiry";
 import { createClient } from "@/lib/supabase/server";
@@ -36,6 +38,7 @@ export default async function DashboardPage() {
 
   const todayItems = scheduleTyped.filter((it) => it.days_of_week.includes(todayDow));
   const completedIds = new Set(completionsTyped.map((c) => c.schedule_item_id));
+  const completedTodayCount = todayItems.filter((it) => completedIds.has(it.id)).length;
 
   const attention = productsTyped
     .map((p) => ({ product: p, info: getExpiryInfo(p) }))
@@ -49,11 +52,27 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-2xl font-medium text-skn-ink">
-          {today.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
-        </h1>
-        <p className="text-sm text-skn-ink/55">ריכוז מהיר של מה שקורה היום בשגרת הטיפוח שלך</p>
+      <div className="flex flex-col gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-medium text-skn-ink">
+            {today.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
+          </h1>
+          <p className="text-sm text-skn-ink/55">ריכוז מהיר של מה שקורה היום בשגרת הטיפוח שלך</p>
+        </div>
+
+        {todayItems.length > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-skn-sand/50">
+              <div
+                className="h-full rounded-full bg-gradient-to-l from-skn-peach to-skn-pink-deep transition-[width] duration-500"
+                style={{ width: `${Math.round((completedTodayCount / todayItems.length) * 100)}%` }}
+              />
+            </div>
+            <span className="shrink-0 font-mono text-xs text-skn-ink/50">
+              {completedTodayCount}/{todayItems.length} הושלמו היום
+            </span>
+          </div>
+        )}
       </div>
 
       <section className="flex flex-col gap-3">
@@ -69,15 +88,15 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {attention.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-6 text-center text-sm text-skn-ink/55">
-            אין מוצרים שפג תוקפם או מתקרבים לתפוגה 🎉
-          </p>
+          <EmptyState icon={Sparkles} tone="sage">
+            אין מוצרים שפג תוקפם או מתקרבים לתפוגה
+          </EmptyState>
         ) : (
           <ul className="flex flex-col gap-2">
             {attention.map(({ product, info }) => (
               <li
                 key={product.id}
-                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm"
+                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <span className="font-medium text-skn-ink/85">
                   {product.name}
@@ -106,15 +125,15 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {dueReminders.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-6 text-center text-sm text-skn-ink/55">
+          <EmptyState icon={CheckCircle2} tone="sage">
             הכל מסודר, אין תזכורות שממתינות כרגע.
-          </p>
+          </EmptyState>
         ) : (
           <ul className="flex flex-col gap-2">
             {dueReminders.map(({ reminder, info }) => (
               <li
                 key={reminder.id}
-                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm"
+                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <span className="font-medium text-skn-ink/85">{reminder.title}</span>
                 <span className="text-xs text-skn-ink/55">

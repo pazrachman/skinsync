@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { Droplet } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
 import {
   deleteReminder,
   markReminderDone,
@@ -123,9 +125,9 @@ export default function ReminderManager({
       {formOpen && <ReminderForm onDone={() => setFormOpen(false)} />}
 
       {sorted.length === 0 && !formOpen && (
-        <p className="rounded-2xl border border-dashed border-skn-sand bg-white p-8 text-center text-sm text-skn-ink/55">
+        <EmptyState icon={Droplet}>
           עדיין אין תזכורות תחזוקה. הוסיפי את הראשונה.
-        </p>
+        </EmptyState>
       )}
 
       <ul className="flex flex-col gap-3">
@@ -134,7 +136,7 @@ export default function ReminderManager({
           return (
             <li
               key={r.id}
-              className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex flex-col gap-1">
                 <div className="flex flex-wrap items-center gap-2">
