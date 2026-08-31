@@ -25,6 +25,8 @@ export interface Product {
   expiry_date_override: string | null; // ISO date
   is_device: boolean;
   notes: string | null;
+  skin_benefits: string | null;
+  avoid_mixing_with: string | null;
   created_at: string;
   updated_at: string;
 }

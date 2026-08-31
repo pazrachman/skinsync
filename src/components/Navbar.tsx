@@ -19,7 +19,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <Link
           href="/dashboard"
-          className="font-display text-lg font-medium text-skn-pink-deep"
+          className="font-display text-3xl font-medium text-skn-pink-deep"
         >
           SkinSync
         </Link>

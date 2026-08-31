@@ -4,6 +4,7 @@ import { useActionState, useMemo, useRef, useState } from "react";
 import { Droplet } from "lucide-react";
 import Checkbox from "@/components/Checkbox";
 import EmptyState from "@/components/EmptyState";
+import MiniBottleIcon from "@/components/MiniBottleIcon";
 import {
   addScheduleItem,
   deleteScheduleItem,
@@ -19,6 +20,13 @@ const SLOTS: { key: TimeOfDay; label: string }[] = [
   { key: "morning", label: "בוקר" },
   { key: "evening", label: "ערב" },
 ];
+
+// גוון הבקבוקון ליד כל פריט בשגרה נושא את הזמן ביום — אותם צבעים כמו קו
+// "בוקר → ערב" בעמוד ההתחברות.
+const SLOT_BOTTLE_FILL: Record<TimeOfDay, string> = {
+  morning: "fill-skn-peach/50",
+  evening: "fill-skn-pink/40",
+};
 
 const initialState: ScheduleFormState = { error: null };
 
@@ -152,6 +160,7 @@ export default function ScheduleGrid({
     () => new Set(completions.map((c) => `${c.schedule_item_id}_${c.completed_on}`)),
     [completions]
   );
+  const todayIso = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="flex flex-col gap-4">
@@ -167,13 +176,44 @@ export default function ScheduleGrid({
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
-        {weekDates.map((date, dayIdx) => (
-          <div key={date} className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-3 shadow-sm transition hover:shadow-md">
-            <div className="text-center">
-              <p className="text-sm font-semibold text-skn-ink">{DAY_LABELS[dayIdx]}</p>
-              <p className="text-xs text-skn-ink/40">
-                {new Date(date).toLocaleDateString("he-IL", { day: "numeric", month: "numeric" })}
-              </p>
+        {weekDates.map((date, dayIdx) => {
+          const isToday = date === todayIso;
+          const dayItems = scheduleItems.filter((it) => it.days_of_week.includes(dayIdx));
+          const dayDone = dayItems.filter((it) => completedSet.has(`${it.id}_${date}`)).length;
+
+          return (
+          <div
+            key={date}
+            className={`flex flex-col gap-2 overflow-hidden rounded-2xl border bg-gradient-to-b p-3 shadow-sm transition hover:shadow-md ${
+              isToday
+                ? "border-skn-pink-deep/40 from-skn-pink/10 to-white"
+                : "border-skn-sand from-skn-cream-deep/50 to-white"
+            }`}
+          >
+            <div
+              aria-hidden
+              className="-mx-3 -mt-3 h-1 bg-gradient-to-l from-skn-peach to-skn-pink-deep"
+            />
+
+            <div className="flex items-center justify-between gap-1">
+              <div className="text-center flex-1">
+                <p className="flex items-center justify-center gap-1.5 text-sm font-semibold text-skn-ink">
+                  {DAY_LABELS[dayIdx]}
+                  {isToday && (
+                    <span className="rounded-full bg-skn-pink-deep px-1.5 py-0.5 font-mono text-[9px] font-normal text-white">
+                      היום
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-skn-ink/40">
+                  {new Date(date).toLocaleDateString("he-IL", { day: "numeric", month: "numeric" })}
+                </p>
+              </div>
+              {dayItems.length > 0 && (
+                <span className="shrink-0 font-mono text-[10px] text-skn-ink/40">
+                  {dayDone}/{dayItems.length}
+                </span>
+              )}
             </div>
 
             {SLOTS.map((slot) => {
@@ -198,6 +238,10 @@ export default function ScheduleGrid({
                         key={item.id}
                         className="flex items-center justify-between gap-1 rounded-lg bg-skn-cream px-2 py-1"
                       >
+                        <MiniBottleIcon
+                          fillClassName={SLOT_BOTTLE_FILL[slot.key]}
+                          className="h-4 w-auto shrink-0"
+                        />
                         <Checkbox
                           checked={done}
                           onChange={() => toggleCompletion(item.id, date, done)}
@@ -229,7 +273,8 @@ export default function ScheduleGrid({
               );
             })}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
