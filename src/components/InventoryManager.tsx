@@ -84,8 +84,13 @@ export default function InventoryManager({ products }: { products: Product[] }) 
       )}
 
       {products.length > 0 && !formOpen && (
-        // "ארון" פתוח — דופן עץ אמיתית מאחורה, ומדף לכל קטגוריה.
-        <div className="skn-wood-panel rounded-[2rem] border border-skn-sand p-4 shadow-[inset_0_3px_14px_rgba(58,44,36,0.18)] sm:p-8">
+        // "ארון" — דופן עץ עם עומק אמיתי, מדף לכל קטגוריה, ודלתות שנפתחות
+        // בטעינה ומגלות את מה שבפנים.
+        <div
+          key={products.length}
+          className="skn-wood-panel relative overflow-hidden rounded-[2rem] border border-skn-sand p-4 sm:p-8"
+          style={{ perspective: "1200px" }}
+        >
           <div className="flex flex-col gap-9">
             {shelves.map((shelf, i) => (
               <div
@@ -141,6 +146,24 @@ export default function InventoryManager({ products }: { products: Product[] }) 
                 />
               </div>
             ))}
+          </div>
+
+          {/* דלת שמאל */}
+          <div
+            aria-hidden
+            className="skn-cabinet-door-left skn-wood-panel pointer-events-none absolute inset-y-0 left-0 z-10 w-1/2 border-l-2 border-skn-sand"
+          >
+            <div className="m-3 h-[calc(100%-1.5rem)] rounded-md border border-skn-ink/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25),inset_0_3px_10px_rgba(58,44,36,0.2)]" />
+            <span className="absolute right-4 top-1/2 h-10 w-1.5 -translate-y-1/2 rounded-full bg-skn-ink/70 shadow-sm" />
+          </div>
+
+          {/* דלת ימין */}
+          <div
+            aria-hidden
+            className="skn-cabinet-door-right skn-wood-panel pointer-events-none absolute inset-y-0 right-0 z-10 w-1/2 border-r-2 border-skn-sand"
+          >
+            <div className="m-3 h-[calc(100%-1.5rem)] rounded-md border border-skn-ink/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25),inset_0_3px_10px_rgba(58,44,36,0.2)]" />
+            <span className="absolute left-4 top-1/2 h-10 w-1.5 -translate-y-1/2 rounded-full bg-skn-ink/70 shadow-sm" />
           </div>
         </div>
       )}
