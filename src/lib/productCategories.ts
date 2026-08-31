@@ -10,7 +10,7 @@ export type ProductCategoryId =
   | "device"
   | "other";
 
-export type ProductShape = "bottle" | "jar" | "device";
+export type ProductShape = "bottle" | "jar" | "device" | "facemask";
 
 export interface ProductCategory {
   id: ProductCategoryId;
@@ -26,7 +26,7 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
   { id: "toner", label: "טונרים", shape: "bottle" },
   { id: "serum", label: "סרומים", shape: "bottle" },
   { id: "moisturizer", label: "קרמים ולחות", shape: "jar" },
-  { id: "mask", label: "מסכות", shape: "jar" },
+  { id: "mask", label: "מסכות", shape: "facemask" },
   { id: "spf", label: "הגנה מהשמש", shape: "bottle" },
   { id: "device", label: "מכשירים", shape: "device" },
   { id: "other", label: "אחר", shape: "bottle" },

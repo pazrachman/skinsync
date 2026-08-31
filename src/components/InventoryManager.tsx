@@ -154,7 +154,12 @@ export default function InventoryManager({ products }: { products: Product[] }) 
             className="skn-cabinet-door-left skn-wood-panel pointer-events-none absolute inset-y-0 left-0 z-10 w-1/2 border-l-2 border-skn-sand"
           >
             <div className="m-3 h-[calc(100%-1.5rem)] rounded-md border border-skn-ink/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25),inset_0_3px_10px_rgba(58,44,36,0.2)]" />
-            <span className="absolute right-4 top-1/2 h-10 w-1.5 -translate-y-1/2 rounded-full bg-skn-ink/70 shadow-sm" />
+            {/* ידית מתכת עם שני ברגי הרכבה */}
+            <div className="absolute right-5 top-1/2 flex -translate-y-1/2 flex-col items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-skn-ink/60 shadow-sm" />
+              <span className="h-14 w-2.5 rounded-full bg-gradient-to-l from-skn-ink/35 via-skn-ink/85 to-skn-ink/35 shadow-md" />
+              <span className="h-2 w-2 rounded-full bg-skn-ink/60 shadow-sm" />
+            </div>
           </div>
 
           {/* דלת ימין */}
@@ -163,7 +168,11 @@ export default function InventoryManager({ products }: { products: Product[] }) 
             className="skn-cabinet-door-right skn-wood-panel pointer-events-none absolute inset-y-0 right-0 z-10 w-1/2 border-r-2 border-skn-sand"
           >
             <div className="m-3 h-[calc(100%-1.5rem)] rounded-md border border-skn-ink/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25),inset_0_3px_10px_rgba(58,44,36,0.2)]" />
-            <span className="absolute left-4 top-1/2 h-10 w-1.5 -translate-y-1/2 rounded-full bg-skn-ink/70 shadow-sm" />
+            <div className="absolute left-5 top-1/2 flex -translate-y-1/2 flex-col items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-skn-ink/60 shadow-sm" />
+              <span className="h-14 w-2.5 rounded-full bg-gradient-to-l from-skn-ink/35 via-skn-ink/85 to-skn-ink/35 shadow-md" />
+              <span className="h-2 w-2 rounded-full bg-skn-ink/60 shadow-sm" />
+            </div>
           </div>
         </div>
       )}

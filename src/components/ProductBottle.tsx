@@ -91,6 +91,37 @@ function Jar({ name, status }: { name: string; status: ExpiryStatus }) {
   );
 }
 
+// צורת מסכת פנים (כמו מסכת בד) — קו מתאר של פנים עם שני חורי עיניים.
+// אותה צורה משמשת גם למדף "מסכות" וגם למכשירי LED (שבפועל הם מסכות
+// עם נקודות אור).
+function FaceMask({
+  toneClassName,
+  withLights = false,
+}: {
+  toneClassName: string;
+  withLights?: boolean;
+}) {
+  return (
+    <div
+      className={`relative flex h-20 w-16 items-start justify-center border px-2 pt-5 ${toneClassName}`}
+      style={{ borderRadius: "48% 48% 42% 42% / 58% 58% 32% 32%" }}
+    >
+      {/* חורי עיניים */}
+      <div className="flex gap-3">
+        <span className="h-2.5 w-3.5 rounded-full bg-skn-ink/45" />
+        <span className="h-2.5 w-3.5 rounded-full bg-skn-ink/45" />
+      </div>
+      {withLights && (
+        <>
+          <span className="absolute right-2.5 top-10 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
+          <span className="absolute left-2.5 top-10 h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
+          <span className="absolute bottom-3 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-skn-pink-deep" />
+        </>
+      )}
+    </div>
+  );
+}
+
 // כל מכשיר מצויר לפי מה שהוא בפועל (מסכת LED, רולר, מברשת, גואה שה),
 // לא סתם קופסה מעוגלת אחידה לכולם.
 function Device({ name }: { name: string }) {
@@ -99,11 +130,7 @@ function Device({ name }: { name: string }) {
   if (kind === "led") {
     return (
       <div className="flex w-24 shrink-0 flex-col items-center gap-1.5" aria-hidden>
-        <div className="flex h-14 w-20 items-center justify-center gap-2 rounded-t-full rounded-b-xl border border-skn-sand bg-skn-sand/40">
-          <span className="h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
-          <span className="h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
-          <span className="h-1.5 w-1.5 rounded-full bg-skn-pink-deep" />
-        </div>
+        <FaceMask toneClassName="border-skn-sand bg-skn-sand/40" withLights />
         <Caption name={name} />
       </div>
     );
@@ -158,9 +185,18 @@ function Device({ name }: { name: string }) {
   );
 }
 
-// בקבוקון/צנצנת/מכשיר — לא סתם אייקון ליד הטקסט. הצורה משתנה לפי סוג
-// המוצר (בקבוק לנוזלים, צנצנת לקרמים, ואצל מכשירים — לפי סוג המכשיר
-// שמתואר בשם עצמו), הצבע לפי סטטוס התפוגה.
+function MaskProduct({ name, status }: { name: string; status: ExpiryStatus }) {
+  return (
+    <div className="flex w-24 shrink-0 flex-col items-center gap-1.5" aria-hidden>
+      <FaceMask toneClassName={STATUS_BODY[status]} />
+      <Caption name={name} />
+    </div>
+  );
+}
+
+// בקבוקון/צנצנת/מסכה/מכשיר — לא סתם אייקון ליד הטקסט. הצורה משתנה לפי
+// סוג המוצר (בקבוק לנוזלים, צנצנת לקרמים, מסכת פנים למסכות, ואצל
+// מכשירים — לפי סוג המכשיר שמתואר בשם עצמו), הצבע לפי סטטוס התפוגה.
 export default function ProductBottle({
   name,
   status,
@@ -172,5 +208,6 @@ export default function ProductBottle({
 }) {
   if (shape === "jar") return <Jar name={name} status={status} />;
   if (shape === "device") return <Device name={name} />;
+  if (shape === "facemask") return <MaskProduct name={name} status={status} />;
   return <SerumBottle name={name} status={status} />;
 }

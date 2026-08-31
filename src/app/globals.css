@@ -100,12 +100,12 @@ body {
 
 .skn-cabinet-door-left {
   transform-origin: left center;
-  animation: skn-door-left 1.3s cubic-bezier(0.6, 0, 0.35, 1) both;
+  animation: skn-door-left 2.6s cubic-bezier(0.6, 0, 0.35, 1) both;
 }
 
 .skn-cabinet-door-right {
   transform-origin: right center;
-  animation: skn-door-right 1.3s cubic-bezier(0.6, 0, 0.35, 1) both;
+  animation: skn-door-right 2.6s cubic-bezier(0.6, 0, 0.35, 1) both;
 }
 
 /* Entrance choreography for the login/signup screen. The content fades
