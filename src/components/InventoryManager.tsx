@@ -6,24 +6,16 @@ import { deleteProduct, markProductOpened } from "@/lib/actions/products";
 import EmptyState from "@/components/EmptyState";
 import ExpiryBadge from "@/components/ExpiryBadge";
 import IngredientTags from "@/components/IngredientTags";
-import MiniBottleIcon from "@/components/MiniBottleIcon";
+import ProductBottle from "@/components/ProductBottle";
 import ProductForm from "@/components/ProductForm";
 import { getExpiryInfo } from "@/lib/expiry";
-import type { ExpiryStatus, Product } from "@/lib/types";
+import type { Product } from "@/lib/types";
 
 const STATUS_ORDER: Record<string, number> = {
   expired: 0,
   soon: 1,
   unopened: 2,
   fresh: 3,
-};
-
-// צבע הזכוכית של הבקבוקון על המדף נושא את אותה משמעות כמו תג התפוגה.
-const STATUS_BOTTLE_FILL: Record<ExpiryStatus, string> = {
-  fresh: "fill-skn-sage/50",
-  soon: "fill-skn-honey/50",
-  expired: "fill-skn-berry/50",
-  unopened: "fill-skn-sand",
 };
 
 export default function InventoryManager({ products }: { products: Product[] }) {
@@ -91,13 +83,11 @@ export default function InventoryManager({ products }: { products: Product[] }) 
                   className="skn-animate-settle"
                   style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
                 >
-                  <div className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-3 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center">
+                    <ProductBottle name={p.name} status={status} />
+
+                    <div className="flex flex-1 flex-col gap-1.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <MiniBottleIcon
-                          fillClassName={STATUS_BOTTLE_FILL[status]}
-                          className="h-6 w-auto shrink-0"
-                        />
                         <span className="font-semibold text-skn-ink">{p.name}</span>
                         {p.brand && <span className="text-sm text-skn-ink/40">· {p.brand}</span>}
                         {p.is_device && (
@@ -112,12 +102,12 @@ export default function InventoryManager({ products }: { products: Product[] }) 
                       {p.notes && <p className="text-sm text-skn-ink/40">{p.notes}</p>}
                     </div>
 
-                    <div className="flex shrink-0 flex-wrap gap-2">
+                    <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
                       {!p.open_date && !p.expiry_date_override && !p.is_device && (
                         <form action={markProductOpened.bind(null, p.id)}>
                           <button
                             type="submit"
-                            className="rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-1.5 text-xs font-medium text-skn-sage hover:bg-skn-sage/20"
+                            className="w-full rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-1.5 text-xs font-medium text-skn-sage hover:bg-skn-sage/20"
                           >
                             סמני כנפתח היום
                           </button>
@@ -125,14 +115,14 @@ export default function InventoryManager({ products }: { products: Product[] }) 
                       )}
                       <button
                         onClick={() => openEdit(p)}
-                        className="rounded-lg border border-skn-sand px-3 py-1.5 text-xs font-medium text-skn-ink/65 hover:bg-skn-cream"
+                        className="w-full rounded-lg border border-skn-sand px-3 py-1.5 text-xs font-medium text-skn-ink/65 hover:bg-skn-cream"
                       >
                         עריכה
                       </button>
                       <form action={deleteProduct.bind(null, p.id)}>
                         <button
                           type="submit"
-                          className="rounded-lg border border-skn-berry/30 px-3 py-1.5 text-xs font-medium text-skn-berry hover:bg-skn-berry/10"
+                          className="w-full rounded-lg border border-skn-berry/30 px-3 py-1.5 text-xs font-medium text-skn-berry hover:bg-skn-berry/10"
                         >
                           מחיקה
                         </button>
