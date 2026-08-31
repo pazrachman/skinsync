@@ -84,8 +84,8 @@ export default function InventoryManager({ products }: { products: Product[] }) 
       )}
 
       {products.length > 0 && !formOpen && (
-        // "ארון" פתוח — רקע חם שמדמה את פנים הארון, ומדף לכל קטגוריה.
-        <div className="rounded-[2rem] border border-skn-sand bg-gradient-to-b from-skn-cream-deep to-skn-cream p-4 shadow-[inset_0_2px_10px_rgba(58,44,36,0.08)] sm:p-8">
+        // "ארון" פתוח — דופן עץ אמיתית מאחורה, ומדף לכל קטגוריה.
+        <div className="skn-wood-panel rounded-[2rem] border border-skn-sand p-4 shadow-[inset_0_3px_14px_rgba(58,44,36,0.18)] sm:p-8">
           <div className="flex flex-col gap-9">
             {shelves.map((shelf, i) => (
               <div
@@ -100,7 +100,7 @@ export default function InventoryManager({ products }: { products: Product[] }) 
                 />
 
                 {/* התא של הקטגוריה */}
-                <div className="rounded-2xl border border-skn-sand/70 bg-white/50 p-4 backdrop-blur-[1px]">
+                <div className="rounded-2xl border border-skn-sand/70 bg-white/65 p-4 backdrop-blur-[1px]">
                   {shelf.products.length === 0 ? (
                     <div className="flex flex-col items-center gap-2 py-3 opacity-40">
                       <div className="flex items-end gap-3">
@@ -134,10 +134,10 @@ export default function InventoryManager({ products }: { products: Product[] }) 
                   {shelf.label}
                 </p>
 
-                {/* המדף עצמו */}
+                {/* המדף עצמו — קרש עץ עם קצה בהיר למעלה */}
                 <div
                   aria-hidden
-                  className="mx-2 mt-1 h-3 rounded-b-xl bg-gradient-to-b from-skn-sand to-skn-sand/40 shadow-[0_4px_6px_rgba(58,44,36,0.15)]"
+                  className="mx-2 mt-1 h-3.5 rounded-b-xl border-t border-white/40 bg-gradient-to-b from-[#c9a874] to-[#a8824f] shadow-[0_5px_7px_rgba(58,44,36,0.28)]"
                 />
               </div>
             ))}

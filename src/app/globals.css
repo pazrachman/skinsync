@@ -38,6 +38,28 @@ body {
   font-family: var(--font-sans);
 }
 
+/* דופן העץ שבתוך ארון הטיפוח — גרדיאנט חם עם סיבי עץ עדינים ותפרי לוחות
+   אנכיים, מורכב רק מגוונים שכבר קיימים בפלטה. */
+.skn-wood-panel {
+  background-color: #e7d9c8;
+  background-image:
+    repeating-linear-gradient(
+      178deg,
+      rgba(58, 44, 36, 0.05) 0px,
+      rgba(58, 44, 36, 0.05) 1px,
+      transparent 1.5px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(58, 44, 36, 0.09) 0px,
+      rgba(58, 44, 36, 0.09) 2px,
+      transparent 2px,
+      transparent 210px
+    ),
+    linear-gradient(160deg, #f3e4d4 0%, #e7d9c8 45%, #d9c2a0 100%);
+}
+
 /* Entrance choreography for the login/signup screen. The content fades
    and rises into place; the בוקר→ערב line literally draws itself in last,
    since it represents the day's rhythm — the one moment on the page

@@ -49,3 +49,16 @@ export function categorizeProduct(
 
   return "other";
 }
+
+export type DeviceKind = "led" | "roller" | "brush" | "guasha" | "generic";
+
+// לאיזה סוג מכשיר מתאים האיור בארון — לפי איך שהמכשיר מתואר בשם המוצר,
+// כי אין שדה נפרד לסוג מכשיר.
+export function categorizeDevice(name: string): DeviceKind {
+  const n = name.trim();
+  if (/led|לד/i.test(n)) return "led";
+  if (/רולר|גלגלת|roller/i.test(n)) return "roller";
+  if (/מברשת|ברסה|brush/i.test(n)) return "brush";
+  if (/גואה?\s?שה|gua\s?sha|גואשה/i.test(n)) return "guasha";
+  return "generic";
+}
