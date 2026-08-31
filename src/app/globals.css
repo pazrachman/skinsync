@@ -84,12 +84,60 @@ body {
   animation: skn-drift 9s ease-in-out infinite alternate;
 }
 
+/* The bottle on the login/signup brand panel: it floats gently, and a
+   single drop falls from the dropper every few seconds — the one small
+   piece of motion that's actually about the product (a serum being
+   applied), not decoration for its own sake. */
+@keyframes skn-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes skn-drip {
+  0%,
+  55% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  63% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  88% {
+    opacity: 0.9;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+.skn-animate-float {
+  animation: skn-float 4.5s ease-in-out infinite;
+}
+
+.skn-animate-drip {
+  animation: skn-drip 4.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skn-animate-fade-up,
   .skn-animate-draw-line,
-  .skn-animate-drift {
+  .skn-animate-drift,
+  .skn-animate-float {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .skn-animate-drip {
+    animation: none !important;
+    opacity: 0 !important;
   }
 }

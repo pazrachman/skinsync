@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import BottleIllustration from "@/components/BottleIllustration";
 
 interface AuthShellProps {
   eyebrow: string;
@@ -83,6 +84,13 @@ export default function AuthShell({
             >
               SkinSync
             </p>
+          </div>
+
+          <div
+            className="skn-animate-fade-up relative flex justify-center"
+            style={delay(250)}
+          >
+            <BottleIllustration className="h-28 w-auto drop-shadow-[0_10px_20px_rgba(58,44,36,0.15)]" />
           </div>
 
           <div className="relative flex flex-col gap-10">
