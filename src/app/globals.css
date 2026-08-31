@@ -143,12 +143,29 @@ body {
   animation: skn-settle 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Product detail modal — pops in slightly, doesn't just appear. */
+@keyframes skn-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.skn-animate-modal-in {
+  animation: skn-modal-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skn-animate-fade-up,
   .skn-animate-draw-line,
   .skn-animate-drift,
   .skn-animate-float,
-  .skn-animate-settle {
+  .skn-animate-settle,
+  .skn-animate-modal-in {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

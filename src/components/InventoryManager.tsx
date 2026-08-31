@@ -2,13 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { Droplet } from "lucide-react";
-import { deleteProduct, markProductOpened } from "@/lib/actions/products";
 import EmptyState from "@/components/EmptyState";
-import ExpiryBadge from "@/components/ExpiryBadge";
-import IngredientTags from "@/components/IngredientTags";
 import ProductBottle from "@/components/ProductBottle";
+import ProductDetailModal from "@/components/ProductDetailModal";
 import ProductForm from "@/components/ProductForm";
 import { getExpiryInfo } from "@/lib/expiry";
+import { categorizeProduct, PRODUCT_CATEGORIES } from "@/lib/productCategories";
 import type { Product } from "@/lib/types";
 
 const STATUS_ORDER: Record<string, number> = {
@@ -21,16 +20,28 @@ const STATUS_ORDER: Record<string, number> = {
 export default function InventoryManager({ products }: { products: Product[] }) {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const sorted = useMemo(
-    () =>
-      [...products].sort((a, b) => {
-        const sa = STATUS_ORDER[getExpiryInfo(a).status];
-        const sb = STATUS_ORDER[getExpiryInfo(b).status];
-        return sa - sb;
-      }),
-    [products]
-  );
+  const selectedProduct = selectedId
+    ? (products.find((p) => p.id === selectedId) ?? null)
+    : null;
+
+  // כל מוצר משתייך למדף אחד לפי קטגוריה — כולל מדפים ריקים, כדי שהארון
+  // תמיד יראה מאורגן ולא יחסר ממנו חלק.
+  const shelves = useMemo(() => {
+    const byCategory = new Map<string, Product[]>(
+      PRODUCT_CATEGORIES.map((c) => [c.id, [] as Product[]])
+    );
+    for (const p of products) {
+      byCategory.get(categorizeProduct(p))!.push(p);
+    }
+    return PRODUCT_CATEGORIES.map((cat) => ({
+      ...cat,
+      products: [...(byCategory.get(cat.id) ?? [])].sort(
+        (a, b) => STATUS_ORDER[getExpiryInfo(a).status] - STATUS_ORDER[getExpiryInfo(b).status]
+      ),
+    }));
+  }, [products]);
 
   function openCreate() {
     setEditing(null);
@@ -38,6 +49,7 @@ export default function InventoryManager({ products }: { products: Product[] }) 
   }
 
   function openEdit(p: Product) {
+    setSelectedId(null);
     setEditing(p);
     setFormOpen(true);
   }
@@ -65,81 +77,79 @@ export default function InventoryManager({ products }: { products: Product[] }) 
         <ProductForm product={editing} onDone={closeForm} key={editing?.id ?? "new"} />
       )}
 
-      {sorted.length === 0 && !formOpen && (
+      {products.length === 0 && !formOpen && (
         <EmptyState icon={Droplet}>
           עדיין לא הוספת מוצרים. לחצי על &ldquo;הוספת מוצר&rdquo; כדי להתחיל.
         </EmptyState>
       )}
 
-      {sorted.length > 0 && (
-        // "ארון" — רקע חם שמדמה את פנים הארון, וכל מוצר יושב על מדף משלו.
-        <div className="rounded-[1.75rem] border border-skn-sand bg-gradient-to-b from-skn-cream-deep to-skn-cream p-3 shadow-[inset_0_2px_8px_rgba(58,44,36,0.08)] sm:p-5">
-          <ul className="flex flex-col gap-5">
-            {sorted.map((p, i) => {
-              const status = getExpiryInfo(p).status;
-              return (
-                <li
-                  key={p.id}
-                  className="skn-animate-settle"
-                  style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
-                >
-                  <div className="flex flex-col gap-3 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center">
-                    <ProductBottle name={p.name} status={status} />
+      {products.length > 0 && !formOpen && (
+        // "ארון" פתוח — רקע חם שמדמה את פנים הארון, ומדף לכל קטגוריה.
+        <div className="rounded-[2rem] border border-skn-sand bg-gradient-to-b from-skn-cream-deep to-skn-cream p-4 shadow-[inset_0_2px_10px_rgba(58,44,36,0.08)] sm:p-8">
+          <div className="flex flex-col gap-9">
+            {shelves.map((shelf, i) => (
+              <div
+                key={shelf.id}
+                className="skn-animate-fade-up"
+                style={{ animationDelay: `${Math.min(i, 8) * 90}ms` }}
+              >
+                {/* רצועת LED מעל המדף */}
+                <div
+                  aria-hidden
+                  className="mx-6 h-5 rounded-full bg-gradient-to-b from-skn-peach/25 to-transparent blur-md"
+                />
 
-                    <div className="flex flex-1 flex-col gap-1.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-skn-ink">{p.name}</span>
-                        {p.brand && <span className="text-sm text-skn-ink/40">· {p.brand}</span>}
-                        {p.is_device && (
-                          <span className="rounded-full bg-skn-peach/10 px-2 py-0.5 text-xs font-medium text-skn-peach">
-                            מכשיר
-                          </span>
-                        )}
-                        <ExpiryBadge product={p} />
+                {/* התא של הקטגוריה */}
+                <div className="rounded-2xl border border-skn-sand/70 bg-white/50 p-4 backdrop-blur-[1px]">
+                  {shelf.products.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2 py-3 opacity-40">
+                      <div className="flex items-end gap-3">
+                        <div className="h-14 w-8 rounded-xl border border-dashed border-skn-ink/30" />
+                        <div className="h-10 w-8 rounded-xl border border-dashed border-skn-ink/30" />
                       </div>
-                      {p.category && <p className="text-sm text-skn-ink/55">{p.category}</p>}
-                      <IngredientTags ingredients={p.active_ingredients} />
-                      {p.notes && <p className="text-sm text-skn-ink/40">{p.notes}</p>}
+                      <p className="text-xs text-skn-ink/60">אין עדיין מוצרים בקטגוריה זו</p>
                     </div>
-
-                    <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
-                      {!p.open_date && !p.expiry_date_override && !p.is_device && (
-                        <form action={markProductOpened.bind(null, p.id)}>
+                  ) : (
+                    <div className="flex flex-wrap items-end justify-center gap-x-6 gap-y-4">
+                      {shelf.products.map((p) => {
+                        const status = getExpiryInfo(p).status;
+                        return (
                           <button
-                            type="submit"
-                            className="w-full rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-1.5 text-xs font-medium text-skn-sage hover:bg-skn-sage/20"
+                            key={p.id}
+                            type="button"
+                            onClick={() => setSelectedId(p.id)}
+                            aria-label={`${p.name} — פרטים`}
+                            className="rounded-2xl transition hover:-translate-y-1 hover:drop-shadow-[0_10px_14px_rgba(58,44,36,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skn-pink/40"
                           >
-                            סמני כנפתח היום
+                            <ProductBottle name={p.name} status={status} shape={shelf.shape} />
                           </button>
-                        </form>
-                      )}
-                      <button
-                        onClick={() => openEdit(p)}
-                        className="w-full rounded-lg border border-skn-sand px-3 py-1.5 text-xs font-medium text-skn-ink/65 hover:bg-skn-cream"
-                      >
-                        עריכה
-                      </button>
-                      <form action={deleteProduct.bind(null, p.id)}>
-                        <button
-                          type="submit"
-                          className="w-full rounded-lg border border-skn-berry/30 px-3 py-1.5 text-xs font-medium text-skn-berry hover:bg-skn-berry/10"
-                        >
-                          מחיקה
-                        </button>
-                      </form>
+                        );
+                      })}
                     </div>
-                  </div>
-                  {/* המדף שעליו יושב הבקבוקון */}
-                  <div
-                    aria-hidden
-                    className="mx-3 h-2 rounded-b-xl bg-gradient-to-b from-skn-sand to-skn-sand/30 shadow-[0_3px_4px_rgba(58,44,36,0.15)]"
-                  />
-                </li>
-              );
-            })}
-          </ul>
+                  )}
+                </div>
+
+                {/* תווית המדף */}
+                <p className="mt-1.5 text-center font-mono text-[11px] tracking-wide text-skn-ink/40">
+                  {shelf.label}
+                </p>
+
+                {/* המדף עצמו */}
+                <div
+                  aria-hidden
+                  className="mx-2 mt-1 h-3 rounded-b-xl bg-gradient-to-b from-skn-sand to-skn-sand/40 shadow-[0_4px_6px_rgba(58,44,36,0.15)]"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
+
+      <ProductDetailModal
+        product={selectedProduct}
+        onClose={() => setSelectedId(null)}
+        onEdit={openEdit}
+      />
     </div>
   );
 }
