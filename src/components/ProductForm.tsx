@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
+import Checkbox from "@/components/Checkbox";
 import { upsertProduct, type ProductFormState } from "@/lib/actions/products";
 import { ALL_INGREDIENTS, INGREDIENT_LABELS } from "@/lib/ingredients";
 import type { Product } from "@/lib/types";
@@ -61,17 +62,14 @@ export default function ProductForm({
           />
         </div>
 
-        <div className="flex items-center gap-2 pt-6">
-          <input
-            id="is_device"
+        <div className="flex items-center pt-6">
+          <Checkbox
             name="is_device"
-            type="checkbox"
             defaultChecked={product?.is_device ?? false}
-            className="h-4 w-4 rounded border-skn-sand text-skn-pink-deep focus:ring-skn-pink/40"
+            tone="neutral"
+            label="זהו מכשיר (לא מוצר מתכלה, למשל מסכת LED)"
+            labelClassName="text-sm text-skn-ink/70"
           />
-          <label htmlFor="is_device" className="text-sm text-skn-ink/70">
-            זהו מכשיר (לא מוצר מתכלה, למשל מסכת LED)
-          </label>
         </div>
 
         <div className="flex flex-col gap-1">
@@ -116,16 +114,15 @@ export default function ProductForm({
         <label className="text-sm font-medium text-skn-ink/70">רכיבים פעילים</label>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {ALL_INGREDIENTS.map((ing) => (
-            <label key={ing} className="flex items-center gap-1.5 text-sm text-skn-ink/65">
-              <input
-                type="checkbox"
-                name="active_ingredients"
-                value={ing}
-                defaultChecked={product?.active_ingredients?.includes(ing) ?? false}
-                className="h-4 w-4 rounded border-skn-sand text-skn-lilac focus:ring-skn-lilac/40"
-              />
-              {INGREDIENT_LABELS[ing]}
-            </label>
+            <Checkbox
+              key={ing}
+              name="active_ingredients"
+              value={ing}
+              defaultChecked={product?.active_ingredients?.includes(ing) ?? false}
+              tone="lilac"
+              label={INGREDIENT_LABELS[ing]}
+              labelClassName="text-sm text-skn-ink/65"
+            />
           ))}
         </div>
       </div>
