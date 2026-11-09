@@ -14,13 +14,10 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="skn-auth-fields">
       {mode === "signup" && (
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="displayName"
-            className="text-sm font-medium text-skn-ink/70"
-          >
+        <div className="skn-auth-field">
+          <label htmlFor="displayName" className="skn-auth-label">
             שם תצוגה
           </label>
           <input
@@ -29,13 +26,13 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
             type="text"
             autoComplete="name"
             placeholder="לדוגמה: נועה"
-            className="rounded-xl border border-skn-sand bg-white px-3.5 py-2.5 text-sm text-skn-ink placeholder:text-skn-ink/35 transition focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-auth-input"
           />
         </div>
       )}
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-sm font-medium text-skn-ink/70">
+      <div className="skn-auth-field">
+        <label htmlFor="email" className="skn-auth-label">
           אימייל
         </label>
         <input
@@ -44,16 +41,13 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
           type="email"
           required
           autoComplete="email"
-          placeholder="you@example.com"
-          className="rounded-xl border border-skn-sand bg-white px-3.5 py-2.5 text-sm text-skn-ink placeholder:text-skn-ink/35 transition focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+          placeholder="paz@example.com"
+          className="skn-auth-input"
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="password"
-          className="text-sm font-medium text-skn-ink/70"
-        >
+      <div className="skn-auth-field">
+        <label htmlFor="password" className="skn-auth-label">
           סיסמה
         </label>
         <input
@@ -63,8 +57,8 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
           required
           minLength={6}
           autoComplete={mode === "login" ? "current-password" : "new-password"}
-          placeholder="לפחות 6 תווים"
-          className="rounded-xl border border-skn-sand bg-white px-3.5 py-2.5 text-sm text-skn-ink placeholder:text-skn-ink/35 transition focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+          placeholder={mode === "signup" ? "לפחות 6 תווים" : undefined}
+          className="skn-auth-input"
         />
       </div>
 
@@ -74,16 +68,8 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="mt-2 rounded-xl bg-skn-pink-deep px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
-      >
-        {pending
-          ? "רגע אחד..."
-          : mode === "login"
-          ? "התחברות"
-          : "יצירת חשבון"}
+      <button type="submit" disabled={pending} className="skn-auth-button">
+        {pending ? "רגע אחד..." : mode === "login" ? "כניסה" : "הרשמה"}
       </button>
     </form>
   );

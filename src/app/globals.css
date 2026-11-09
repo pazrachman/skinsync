@@ -248,3 +248,210 @@ body {
     opacity: 0 !important;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Auth pages (login / signup) — a narrow form column on the right (RTL)
+   and the dropper video filling the rest. Scoped palette: these values
+   apply only under .skn-auth until the app-wide palette is updated.
+   --------------------------------------------------------------------- */
+.skn-auth {
+  --auth-bg: #efe9df;
+  --auth-text: #2b2620;
+  --auth-muted: #6f655a;
+  --auth-field: #f7f3ec;
+  --auth-border: #d3c9bb;
+  --auth-accent: #8a6a3f;
+  --auth-button: #3a3027;
+  --auth-button-text: #f7f1e6;
+
+  display: grid;
+  grid-template-columns: minmax(340px, 30%) 1fr;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--auth-bg);
+  color: var(--auth-text);
+}
+
+/* Form column — first child, so it sits on the right in RTL. */
+.skn-auth-form-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 20px;
+}
+
+.skn-auth-form-inner {
+  width: 100%;
+  max-width: 300px;
+  margin-inline: auto;
+  container-type: inline-size;
+}
+
+.skn-auth-brand {
+  text-align: right;
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--auth-text);
+}
+
+.skn-auth-logo {
+  font-size: clamp(1.9rem, 2.5vw, 2.4rem);
+  line-height: 1;
+}
+
+.skn-auth-tagline {
+  margin-top: 10px;
+  text-align: right;
+  text-transform: lowercase;
+  white-space: nowrap;
+  /* Always one line: the phrase is ~6.5em wide, so cap the size at 15% of
+     the column (15cqi × 6.5 ≈ 98% of its width). */
+  font-size: min(clamp(2.5rem, 3.6vw, 3.4rem), 15cqi);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+}
+
+.skn-auth-body {
+  margin-top: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.skn-auth-footer {
+  text-align: center;
+  color: var(--auth-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.skn-auth-footer a {
+  color: var(--auth-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.skn-auth-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.skn-auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skn-auth-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--auth-text);
+}
+
+.skn-auth-input {
+  background: var(--auth-field);
+  border: 1px solid var(--auth-border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  color: var(--auth-text);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.skn-auth-input::placeholder {
+  color: var(--auth-muted);
+  opacity: 0.7;
+}
+
+.skn-auth-input:focus {
+  outline: none;
+  border-color: var(--auth-accent);
+  box-shadow: 0 0 0 3px rgba(138, 106, 63, 0.18);
+}
+
+.skn-auth-button {
+  background: var(--auth-button);
+  color: var(--auth-button-text);
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 12px;
+  transition:
+    transform 0.12s ease,
+    opacity 0.15s ease;
+}
+
+.skn-auth-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.skn-auth-button:disabled {
+  opacity: 0.6;
+}
+
+.skn-auth-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(138, 106, 63, 0.35);
+}
+
+/* Video column — clean: no text, no gradient. */
+.skn-auth-video-side {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #3a3027;
+}
+
+.skn-auth-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 24%;
+}
+
+@media (max-width: 820px) {
+  .skn-auth {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .skn-auth-video-side {
+    order: -1;
+    position: relative;
+    height: 42vh;
+    height: 42dvh;
+  }
+
+  .skn-auth-media {
+    object-position: 50% 18%;
+  }
+
+  .skn-auth-form-side {
+    justify-content: flex-start;
+    padding: 28px 16px 40px;
+  }
+
+  .skn-auth-logo {
+    font-size: 2rem;
+  }
+
+  .skn-auth-tagline {
+    font-size: min(clamp(2.4rem, 11vw, 3rem), 15cqi);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skn-auth-button {
+    transition: none;
+  }
+
+  .skn-auth-button:active:not(:disabled) {
+    transform: none;
+  }
+}

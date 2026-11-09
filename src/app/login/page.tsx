@@ -15,41 +15,37 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <AuthShell
-      eyebrow="כניסה לחשבון"
-      title="ברוכה השבה"
-      subtitle="התחברי כדי להמשיך את השגרה בדיוק מאיפה שעצרת."
       footer={
         <>
-          עדיין אין לך חשבון?{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-skn-pink-deep hover:underline"
-          >
-            הרשמה
-          </Link>
+          אין לך חשבון? <Link href="/signup">הרשמה</Link>
         </>
       }
+      notice={
+        (verified || checkEmail || callbackFailed) && (
+          <>
+            {verified && (
+              <p className="rounded-xl bg-skn-sage/10 px-3.5 py-2.5 text-sm text-skn-sage">
+                האימייל אומת בהצלחה! אפשר להתחבר עכשיו.
+              </p>
+            )}
+
+            {checkEmail && (
+              <p className="rounded-xl bg-skn-honey/10 px-3.5 py-2.5 text-sm text-skn-honey">
+                נרשמת בהצלחה! שלחנו אליך אימייל לאישור החשבון — לחצי על הקישור
+                שבו כדי להתחבר.
+              </p>
+            )}
+
+            {callbackFailed && (
+              <p className="rounded-xl bg-skn-berry/10 px-3.5 py-2.5 text-sm text-skn-berry">
+                אימות הקישור נכשל או שפג תוקפו. אפשר לנסות להתחבר, או להירשם
+                מחדש כדי לקבל קישור חדש.
+              </p>
+            )}
+          </>
+        )
+      }
     >
-      {verified && (
-        <p className="mb-4 rounded-xl bg-skn-sage/10 px-3.5 py-2.5 text-sm text-skn-sage">
-          האימייל אומת בהצלחה! אפשר להתחבר עכשיו.
-        </p>
-      )}
-
-      {checkEmail && (
-        <p className="mb-4 rounded-xl bg-skn-honey/10 px-3.5 py-2.5 text-sm text-skn-honey">
-          נרשמת בהצלחה! שלחנו אליך אימייל לאישור החשבון — לחצי על הקישור
-          שבו כדי להתחבר.
-        </p>
-      )}
-
-      {callbackFailed && (
-        <p className="mb-4 rounded-xl bg-skn-berry/10 px-3.5 py-2.5 text-sm text-skn-berry">
-          אימות הקישור נכשל או שפג תוקפו. אפשר לנסות להתחבר, או להירשם
-          מחדש כדי לקבל קישור חדש.
-        </p>
-      )}
-
       <AuthForm mode="login" action={signIn} />
     </AuthShell>
   );
