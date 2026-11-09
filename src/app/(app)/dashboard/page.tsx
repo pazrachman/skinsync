@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { CheckCircle2, Sparkles } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
 import TodayRoutine from "@/components/TodayRoutine";
 import { EXPIRY_STATUS_COLOR, EXPIRY_STATUS_LABEL, getExpiryInfo, getReminderDueInfo } from "@/lib/expiry";
+import { logDbError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { MaintenanceReminder, Product, ScheduleCompletion, ScheduleItem } from "@/lib/types";
 
@@ -16,7 +18,7 @@ export default async function DashboardPage() {
   const todayIso = today.toISOString().slice(0, 10);
   const todayDow = today.getDay();
 
-  const [{ data: products }, { data: scheduleItems }, { data: completions }, { data: reminders }] =
+  const [productsRes, scheduleRes, completionsRes, remindersRes] =
     await Promise.all([
       supabase.from("products").select("*").eq("user_id", user!.id),
       supabase
@@ -31,10 +33,17 @@ export default async function DashboardPage() {
       supabase.from("maintenance_reminders").select("*").eq("user_id", user!.id),
     ]);
 
-  const productsTyped = (products as Product[]) ?? [];
-  const scheduleTyped = (scheduleItems as unknown as ScheduleItem[]) ?? [];
-  const completionsTyped = (completions as ScheduleCompletion[]) ?? [];
-  const remindersTyped = (reminders as MaintenanceReminder[]) ?? [];
+  // קריאה שנכשלה היא לא "אין נתונים" — מציגים שגיאה ברורה במקום מצב ריק.
+  const failed = [productsRes, scheduleRes, completionsRes, remindersRes].find((r) => r.error);
+  if (failed?.error) {
+    logDbError("DashboardPage: load", failed.error);
+    return <ErrorState title="לא הצלחנו לטעון את לוח הבקרה" />;
+  }
+
+  const productsTyped = (productsRes.data ?? []) as Product[];
+  const scheduleTyped = (scheduleRes.data ?? []) as unknown as ScheduleItem[];
+  const completionsTyped = (completionsRes.data ?? []) as ScheduleCompletion[];
+  const remindersTyped = (remindersRes.data ?? []) as MaintenanceReminder[];
 
   const todayItems = scheduleTyped.filter((it) => it.days_of_week.includes(todayDow));
   const completedIds = new Set(completionsTyped.map((c) => c.schedule_item_id));

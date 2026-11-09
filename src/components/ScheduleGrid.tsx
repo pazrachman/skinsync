@@ -1,16 +1,18 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useRef, useState, useTransition } from "react";
 import { Droplet, Moon, Sun } from "lucide-react";
 import Checkbox from "@/components/Checkbox";
 import EmptyState from "@/components/EmptyState";
+import InlineError from "@/components/InlineError";
 import MiniBottleIcon from "@/components/MiniBottleIcon";
+import { completionKey, useCompletionToggle } from "@/components/useCompletionToggle";
 import {
   addScheduleItem,
   deleteScheduleItem,
-  toggleCompletion,
   type ScheduleFormState,
 } from "@/lib/actions/schedule";
+import { ERR_NETWORK } from "@/lib/errors";
 import { findConflicts } from "@/lib/ingredients";
 import { INGREDIENT_LABELS } from "@/lib/ingredients";
 import type { Product, ScheduleCompletion, ScheduleItem, TimeOfDay } from "@/lib/types";
@@ -42,8 +44,16 @@ const SLOT_ICON: Record<TimeOfDay, string> = {
 const initialState: ScheduleFormState = { error: null };
 
 function AddScheduleItemForm({ products }: { products: Product[] }) {
-  const [state, formAction, pending] = useActionState(addScheduleItem, initialState);
   const [open, setOpen] = useState(false);
+  // סוגרים את הטופס רק אם השמירה הצליחה — אחרת השגיאה נשארת גלויה
+  const [state, formAction, pending] = useActionState(
+    async (prev: ScheduleFormState, fd: FormData) => {
+      const result = await addScheduleItem(prev, fd);
+      if (!result.error) setOpen(false);
+      return result;
+    },
+    initialState
+  );
   const daysContainerRef = useRef<HTMLDivElement>(null);
 
   function selectAllDays() {
@@ -67,10 +77,7 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
 
   return (
     <form
-      action={async (fd) => {
-        await formAction(fd);
-        setOpen(false);
-      }}
+      action={formAction}
       className="flex flex-col gap-3 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm"
     >
       <div className="grid gap-3 sm:grid-cols-2">
@@ -132,9 +139,7 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
         </div>
       </div>
 
-      {state.error && (
-        <p className="rounded-lg bg-skn-berry/10 px-3 py-2 text-sm text-skn-berry">{state.error}</p>
-      )}
+      <InlineError message={state.error} />
 
       <div className="flex gap-2">
         <button
@@ -167,11 +172,25 @@ export default function ScheduleGrid({
   completions: ScheduleCompletion[];
   weekDates: string[];
 }) {
-  const completedSet = useMemo(
-    () => new Set(completions.map((c) => `${c.schedule_item_id}_${c.completed_on}`)),
+  const serverDoneKeys = useMemo(
+    () => new Set(completions.map((c) => completionKey(c.schedule_item_id, c.completed_on))),
     [completions]
   );
+  const { isDone, toggle, error, setError } = useCompletionToggle(serverDoneKeys);
+  const [, startDelete] = useTransition();
   const todayIso = new Date().toISOString().slice(0, 10);
+
+  function handleDelete(id: string) {
+    setError(null);
+    startDelete(async () => {
+      try {
+        const result = await deleteScheduleItem(id);
+        if (result.error) setError(result.error);
+      } catch {
+        setError(ERR_NETWORK);
+      }
+    });
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -179,6 +198,8 @@ export default function ScheduleGrid({
         <h1 className="font-display text-xl font-medium text-skn-ink">שגרה שבועית</h1>
         <AddScheduleItemForm products={products} />
       </div>
+
+      <InlineError message={error} onDismiss={() => setError(null)} />
 
       {scheduleItems.length === 0 && (
         <EmptyState icon={Droplet}>
@@ -193,7 +214,7 @@ export default function ScheduleGrid({
         {weekDates.map((date, dayIdx) => {
           const isToday = date === todayIso;
           const dayItems = scheduleItems.filter((it) => it.days_of_week.includes(dayIdx));
-          const dayDone = dayItems.filter((it) => completedSet.has(`${it.id}_${date}`)).length;
+          const dayDone = dayItems.filter((it) => isDone(it.id, date)).length;
 
           const dayComplete = dayItems.length > 0 && dayDone === dayItems.length;
 
@@ -262,8 +283,7 @@ export default function ScheduleGrid({
                   )}
 
                   {items.map((item) => {
-                    const key = `${item.id}_${date}`;
-                    const done = completedSet.has(key);
+                    const done = isDone(item.id, date);
                     return (
                       <div
                         key={item.id}
@@ -275,13 +295,13 @@ export default function ScheduleGrid({
                         />
                         <Checkbox
                           checked={done}
-                          onChange={() => toggleCompletion(item.id, date, done)}
+                          onChange={() => toggle(item.id, date)}
                           className="flex-1"
                           label={item.product?.name ?? "מוצר נמחק"}
                           labelClassName={`text-xs ${done ? "text-skn-ink/35 line-through" : "text-skn-ink/75"}`}
                         />
                         <button
-                          onClick={() => deleteScheduleItem(item.id)}
+                          onClick={() => handleDelete(item.id)}
                           className="shrink-0 text-xs text-skn-ink/25 hover:text-skn-berry"
                           title="הסרה מהשגרה"
                         >

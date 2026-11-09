@@ -1,5 +1,7 @@
 import { addDays, format, startOfWeek } from "date-fns";
+import ErrorState from "@/components/ErrorState";
 import ScheduleGrid from "@/components/ScheduleGrid";
+import { logDbError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { Product, ScheduleCompletion, ScheduleItem } from "@/lib/types";
 
@@ -14,7 +16,7 @@ export default async function SchedulePage() {
     format(addDays(weekStart, i), "yyyy-MM-dd")
   );
 
-  const [{ data: products }, { data: scheduleItems }, { data: completions }] =
+  const [productsRes, scheduleRes, completionsRes] =
     await Promise.all([
       supabase
         .from("products")
@@ -34,11 +36,17 @@ export default async function SchedulePage() {
         .lte("completed_on", weekDates[6]),
     ]);
 
+  const failed = [productsRes, scheduleRes, completionsRes].find((r) => r.error);
+  if (failed?.error) {
+    logDbError("SchedulePage: load", failed.error);
+    return <ErrorState title="לא הצלחנו לטעון את השגרה השבועית" />;
+  }
+
   return (
     <ScheduleGrid
-      products={(products as Product[]) ?? []}
-      scheduleItems={(scheduleItems as unknown as ScheduleItem[]) ?? []}
-      completions={(completions as ScheduleCompletion[]) ?? []}
+      products={(productsRes.data ?? []) as Product[]}
+      scheduleItems={(scheduleRes.data ?? []) as unknown as ScheduleItem[]}
+      completions={(completionsRes.data ?? []) as ScheduleCompletion[]}
       weekDates={weekDates}
     />
   );

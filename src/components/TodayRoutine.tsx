@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import { Droplet } from "lucide-react";
 import Checkbox from "@/components/Checkbox";
 import EmptyState from "@/components/EmptyState";
-import { toggleCompletion } from "@/lib/actions/schedule";
+import InlineError from "@/components/InlineError";
+import { completionKey, useCompletionToggle } from "@/components/useCompletionToggle";
 import { findConflicts, INGREDIENT_LABELS } from "@/lib/ingredients";
 import type { ScheduleItem, TimeOfDay } from "@/lib/types";
 
@@ -21,6 +23,12 @@ export default function TodayRoutine({
   completedIds: Set<string>;
   date: string;
 }) {
+  const serverDoneKeys = useMemo(
+    () => new Set([...completedIds].map((id) => completionKey(id, date))),
+    [completedIds, date]
+  );
+  const { isDone, toggle, error, setError } = useCompletionToggle(serverDoneKeys);
+
   if (items.length === 0) {
     return (
       <EmptyState icon={Droplet}>
@@ -30,6 +38,8 @@ export default function TodayRoutine({
   }
 
   return (
+    <div className="flex flex-col gap-3">
+    <InlineError message={error} onDismiss={() => setError(null)} />
     <div className="grid gap-3 sm:grid-cols-2">
       {SLOTS.map((slot) => {
         const slotItems = items.filter((it) => it.time_of_day === slot.key);
@@ -43,12 +53,12 @@ export default function TodayRoutine({
             <p className="text-sm font-semibold text-skn-ink/75">{slot.label}</p>
             <ul className="flex flex-col gap-1.5">
               {slotItems.map((item) => {
-                const done = completedIds.has(item.id);
+                const done = isDone(item.id, date);
                 return (
                   <li key={item.id}>
                     <Checkbox
                       checked={done}
-                      onChange={() => toggleCompletion(item.id, date, done)}
+                      onChange={() => toggle(item.id, date)}
                       label={item.product?.name ?? "מוצר נמחק"}
                       labelClassName={`text-sm ${done ? "text-skn-ink/35 line-through" : "text-skn-ink/80"}`}
                     />
@@ -68,6 +78,7 @@ export default function TodayRoutine({
           </div>
         );
       })}
+    </div>
     </div>
   );
 }

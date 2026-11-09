@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { CircleCheck, TriangleAlert, X } from "lucide-react";
 import { deleteProduct, markProductOpened } from "@/lib/actions/products";
 import ExpiryBadge from "@/components/ExpiryBadge";
+import InlineError from "@/components/InlineError";
 import IngredientTags from "@/components/IngredientTags";
 import ProductBottle from "@/components/ProductBottle";
+import { ERR_NETWORK, type ActionResult } from "@/lib/errors";
 import { getExpiryInfo } from "@/lib/expiry";
 import { categorizeProduct, PRODUCT_CATEGORIES } from "@/lib/productCategories";
 import type { Product } from "@/lib/types";
@@ -19,6 +21,25 @@ export default function ProductDetailModal({
   onClose: () => void;
   onEdit: (product: Product) => void;
 }) {
+  // השגיאה שמורה יחד עם מזהה המוצר, כדי שלא "תדלוף" למוצר אחר שנפתח אחר כך
+  const [actionError, setActionError] = useState<{ productId: string; message: string } | null>(
+    null
+  );
+  const [pending, startTransition] = useTransition();
+
+  function run(productId: string, action: () => Promise<ActionResult>, onSuccess?: () => void) {
+    setActionError(null);
+    startTransition(async () => {
+      try {
+        const result = await action();
+        if (result.error) setActionError({ productId, message: result.error });
+        else onSuccess?.();
+      } catch {
+        setActionError({ productId, message: ERR_NETWORK });
+      }
+    });
+  }
+
   useEffect(() => {
     if (!product) return;
 
@@ -118,15 +139,19 @@ export default function ProductDetailModal({
         </div>
 
         <div className="mt-6 flex flex-col gap-2">
+          <InlineError
+            message={actionError?.productId === product.id ? actionError.message : null}
+            onDismiss={() => setActionError(null)}
+          />
           {!product.open_date && !product.expiry_date_override && !product.is_device && (
-            <form action={markProductOpened.bind(null, product.id)}>
-              <button
-                type="submit"
-                className="w-full rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-2 text-sm font-medium text-skn-sage hover:bg-skn-sage/20"
-              >
-                סמני כנפתח היום
-              </button>
-            </form>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => run(product.id, () => markProductOpened(product.id))}
+              className="w-full rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-2 text-sm font-medium text-skn-sage hover:bg-skn-sage/20 disabled:opacity-60"
+            >
+              סמני כנפתח היום
+            </button>
           )}
           <button
             onClick={() => onEdit(product)}
@@ -134,15 +159,15 @@ export default function ProductDetailModal({
           >
             עריכה
           </button>
-          <form action={deleteProduct.bind(null, product.id)}>
-            <button
-              type="submit"
-              onClick={onClose}
-              className="w-full rounded-lg border border-skn-berry/30 px-3 py-2 text-sm font-medium text-skn-berry hover:bg-skn-berry/10"
-            >
-              מחיקה
-            </button>
-          </form>
+          <button
+            type="button"
+            disabled={pending}
+            // סוגרים את החלון רק אחרי שהמחיקה באמת הצליחה
+            onClick={() => run(product.id, () => deleteProduct(product.id), onClose)}
+            className="w-full rounded-lg border border-skn-berry/30 px-3 py-2 text-sm font-medium text-skn-berry hover:bg-skn-berry/10 disabled:opacity-60"
+          >
+            מחיקה
+          </button>
         </div>
       </div>
     </div>

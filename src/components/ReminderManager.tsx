@@ -1,14 +1,16 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, useTransition } from "react";
 import { Droplet } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
+import InlineError from "@/components/InlineError";
 import {
   deleteReminder,
   markReminderDone,
   upsertReminder,
   type ReminderFormState,
 } from "@/lib/actions/reminders";
+import { ERR_NETWORK, type ActionResult } from "@/lib/errors";
 import {
   REMINDER_STATUS_COLOR,
   REMINDER_STATUS_LABEL,
@@ -94,6 +96,20 @@ export default function ReminderManager({
   reminders: MaintenanceReminder[];
 }) {
   const [formOpen, setFormOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function run(action: () => Promise<ActionResult>) {
+    setActionError(null);
+    startTransition(async () => {
+      try {
+        const result = await action();
+        if (result.error) setActionError(result.error);
+      } catch {
+        setActionError(ERR_NETWORK);
+      }
+    });
+  }
 
   const sorted = useMemo(
     () =>
@@ -121,6 +137,8 @@ export default function ReminderManager({
         משימות תחזוקה שאינן נמרחות ישירות על הפנים — למשל ניקוי מברשות איפור, חיטוי ציפית
         משי, או ניקוי מכשירי טיפוח.
       </p>
+
+      <InlineError message={actionError} onDismiss={() => setActionError(null)} />
 
       {formOpen && <ReminderForm onDone={() => setFormOpen(false)} />}
 
@@ -161,13 +179,15 @@ export default function ReminderManager({
 
               <div className="flex shrink-0 gap-2">
                 <button
-                  onClick={() => markReminderDone(r.id)}
+                  disabled={pending}
+                  onClick={() => run(() => markReminderDone(r.id))}
                   className="rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-1.5 text-xs font-medium text-skn-sage hover:bg-skn-sage/20"
                 >
                   בוצע היום
                 </button>
                 <button
-                  onClick={() => deleteReminder(r.id)}
+                  disabled={pending}
+                  onClick={() => run(() => deleteReminder(r.id))}
                   className="rounded-lg border border-skn-berry/30 px-3 py-1.5 text-xs font-medium text-skn-berry hover:bg-skn-berry/10"
                 >
                   מחיקה

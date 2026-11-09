@@ -2,10 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import {
+  dbFailure,
+  ERR_NOT_FOUND,
+  ERR_SIGNED_OUT,
+  OK,
+  type ActionResult,
+} from "@/lib/errors";
 
-export interface ReminderFormState {
-  error: string | null;
-}
+export type ReminderFormState = ActionResult;
 
 export async function upsertReminder(
   _prevState: ReminderFormState,
@@ -15,7 +20,7 @@ export async function upsertReminder(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "יש להתחבר מחדש." };
+  if (!user) return { error: ERR_SIGNED_OUT };
 
   const id = String(formData.get("id") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
@@ -34,44 +39,64 @@ export async function upsertReminder(
     cadence_days: cadenceDays,
   };
 
-  const { error } = id
-    ? await supabase.from("maintenance_reminders").update(payload).eq("id", id).eq("user_id", user.id)
-    : await supabase.from("maintenance_reminders").insert(payload);
+  const { data, error } = id
+    ? await supabase
+        .from("maintenance_reminders")
+        .update(payload)
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .select("id")
+    : await supabase.from("maintenance_reminders").insert(payload).select("id");
 
-  if (error) return { error: error.message };
+  if (error) return dbFailure("upsertReminder", error);
+  if (!data || data.length === 0) return { error: ERR_NOT_FOUND };
 
   revalidatePath("/reminders");
   revalidatePath("/dashboard");
-  return { error: null };
+  return OK;
 }
 
-export async function markReminderDone(id: string) {
+export async function markReminderDone(id: string): Promise<ActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: ERR_SIGNED_OUT };
 
   const today = new Date().toISOString().slice(0, 10);
-  await supabase
+  const { data, error } = await supabase
     .from("maintenance_reminders")
     .update({ last_done_on: today })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("id");
+
+  if (error) return dbFailure("markReminderDone", error);
+  if (!data || data.length === 0) return { error: ERR_NOT_FOUND };
 
   revalidatePath("/reminders");
   revalidatePath("/dashboard");
+  return OK;
 }
 
-export async function deleteReminder(id: string) {
+export async function deleteReminder(id: string): Promise<ActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: ERR_SIGNED_OUT };
 
-  await supabase.from("maintenance_reminders").delete().eq("id", id).eq("user_id", user.id);
+  const { data, error } = await supabase
+    .from("maintenance_reminders")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select("id");
+
+  if (error) return dbFailure("deleteReminder", error);
+  if (!data || data.length === 0) return { error: ERR_NOT_FOUND };
 
   revalidatePath("/reminders");
   revalidatePath("/dashboard");
+  return OK;
 }

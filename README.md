@@ -32,9 +32,21 @@
 2. בתפריט **Project Settings → API** תמצאי את:
    - `Project URL`
    - `anon public` key
-3. בתפריט **SQL Editor** צרי שאילתה חדשה, הדביקי לתוכה את כל התוכן של
-   `supabase/schema.sql` מהריפו הזה, ולחצי **Run**. זה יוצר את כל
-   הטבלאות, ההרשאות (RLS) והטריגרים הדרושים.
+3. בתפריט **SQL Editor** הריצי, **לפי הסדר**, כל אחד מהקבצים שבתיקייה
+   `supabase/migrations/` (שאילתה חדשה → הדבקה → **Run**):
+   1. `20260601000000_initial_schema.sql` — טבלאות, הרשאות (RLS) וטריגרים.
+   2. `20261109000000_harden_schedule_ownership_and_weekdays.sql` — הקשחת
+      RLS (אי אפשר לסמן V/לשבץ מוצר על פריט של משתמשת אחרת) ואילוץ
+      `days_of_week` לטווח 0–6.
+
+   לחלופין, עם ה-CLI: `npx supabase link --project-ref <ref>` ואז
+   `npx supabase db push`.
+
+   **פרויקט קיים** (שכבר הריץ בעבר את `supabase/schema.sql` הישן): מספיק
+   להריץ רק את המיגרציה השנייה. היא מנקה קודם נתונים לא תקינים (סימוני V
+   שנוצרו על פריט של משתמשת אחרת, ימים מחוץ לטווח 0–6) ורק אז מוסיפה את
+   האילוצים. אם עובדים עם `db push`, קודם מסמנים את הסכימה הראשונית כמיושמת:
+   `npx supabase migration repair --status applied 20260601000000`.
 4. ודאי שב-**Authentication → Providers** ה-Email provider פעיל (ברירת
    מחדל). אם תרצי שהרשמה לא תדרוש אימות מייל, אפשר לכבות זאת תחת
    **Authentication → Settings → Email Auth → Confirm email**.
@@ -63,7 +75,31 @@ npm run dev
 האתר יעלה בכתובת [http://localhost:3000](http://localhost:3000).
 הרשמה ראשונה יוצרת אוטומטית פרופיל אישי בטבלת `profiles`.
 
-### 4. בנייה לפרודקשן
+### 4. בדיקות
+
+```bash
+npm run test:unit          # לוגיקה טהורה + Server Actions עם כשלים מדומים + UI (jsdom)
+npm run db:start           # Supabase מקומי ב-Docker (פעם ראשונה מוריד images)
+npm run test:integration   # מול בסיס הנתונים המקומי האמיתי
+npm test                   # הכל
+```
+
+בדיקות האינטגרציה דורשות **Docker** פעיל. `npm run db:start` מרים
+Postgres + Auth + REST מקומיים ומריץ את כל המיגרציות; הבדיקות קוראות את
+הכתובת והמפתחות אוטומטית מ-`supabase status`, ומסרבות לרוץ מול כתובת שאינה
+localhost (הן יוצרות ומוחקות משתמשים עם מפתח service role). אחרי שינוי
+מיגרציה: `npm run db:reset`. סיום: `npm run db:stop`.
+
+מה נבדק מול ה-DB האמיתי (`tests/integration/`):
+
+- יצירת שגרה → סימון V → קריאה חוזרת של הסימון השמור (וביטולו).
+- ניסיון של משתמשת אחת לסמן V / לעדכן / למחוק / לקרוא סימון על פריט שגרה
+  של משתמשת אחרת, ולשבץ מוצר של משתמשת אחרת — נחסם גם ב-RLS (ישירות מול
+  הטבלה) וגם ב-Server Action, ומאומת עם service role שלא נכתב כלום.
+- ימים לא תקינים (‎-1, 7, 8, 2.5, NaN, ‎" 3"‎ וכו') — נדחים ב-action
+  ובאילוץ ה-CHECK של בסיס הנתונים.
+
+### 5. בנייה לפרודקשן
 
 ```bash
 npm run build
@@ -93,8 +129,14 @@ src/
     expiry.ts                   לוגיקת חישוב תפוגה וסטטוס תזכורות
     ingredients.ts               מטריצת קונפליקטים בין רכיבים פעילים
     types.ts                    טיפוסים משותפים
+    validation.ts               ולידציה משותפת (ימים בשבוע, תאריכים)
+    errors.ts                   הודעות שגיאה אחידות + ActionResult
 supabase/
-  schema.sql                    סכימת בסיס הנתונים + RLS (מריצים פעם אחת ב-Supabase)
+  config.toml                   הגדרות Supabase מקומי (supabase start)
+  migrations/                   סכימת בסיס הנתונים + RLS, לפי סדר
+tests/
+  integration/                  בדיקות מול Supabase מקומי אמיתי
+  unit/, ui/                    כשלים מדומים ב-Server Actions, רכיבי UI
 ```
 
 ## הרחבות אפשריות להמשך

@@ -2,11 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import {
+  dbFailure,
+  ERR_NOT_FOUND,
+  ERR_SIGNED_OUT,
+  OK,
+  type ActionResult,
+} from "@/lib/errors";
 import type { IngredientKey } from "@/lib/types";
 
-export interface ProductFormState {
-  error: string | null;
-}
+export type ProductFormState = ActionResult;
 
 function parseIngredients(formData: FormData): IngredientKey[] {
   return formData.getAll("active_ingredients").map((v) => String(v)) as IngredientKey[];
@@ -22,7 +27,7 @@ export async function upsertProduct(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "יש להתחבר מחדש." };
+    return { error: ERR_SIGNED_OUT };
   }
 
   const id = String(formData.get("id") ?? "").trim();
@@ -60,48 +65,61 @@ export async function upsertProduct(
     avoid_mixing_with: avoidMixingWith || null,
   };
 
-  const { error } = id
-    ? await supabase.from("products").update(payload).eq("id", id).eq("user_id", user.id)
-    : await supabase.from("products").insert(payload);
+  const { data, error } = id
+    ? await supabase.from("products").update(payload).eq("id", id).eq("user_id", user.id).select("id")
+    : await supabase.from("products").insert(payload).select("id");
 
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePath("/inventory");
-  revalidatePath("/dashboard");
-  revalidatePath("/schedule");
-  return { error: null };
-}
-
-export async function deleteProduct(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
-
-  await supabase.from("products").delete().eq("id", id).eq("user_id", user.id);
+  if (error) return dbFailure("upsertProduct", error);
+  if (!data || data.length === 0) return { error: ERR_NOT_FOUND };
 
   revalidatePath("/inventory");
   revalidatePath("/dashboard");
   revalidatePath("/schedule");
+  return OK;
 }
 
-export async function markProductOpened(id: string) {
+export async function deleteProduct(id: string): Promise<ActionResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return { error: ERR_SIGNED_OUT };
+
+  const { data, error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select("id");
+
+  if (error) return dbFailure("deleteProduct", error);
+  if (!data || data.length === 0) return { error: ERR_NOT_FOUND };
+
+  revalidatePath("/inventory");
+  revalidatePath("/dashboard");
+  revalidatePath("/schedule");
+  return OK;
+}
+
+export async function markProductOpened(id: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: ERR_SIGNED_OUT };
 
   const today = new Date().toISOString().slice(0, 10);
-  await supabase
+  const { data, error } = await supabase
     .from("products")
     .update({ open_date: today })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("id");
+
+  if (error) return dbFailure("markProductOpened", error);
+  if (!data || data.length === 0) return { error: ERR_NOT_FOUND };
 
   revalidatePath("/inventory");
   revalidatePath("/dashboard");
+  return OK;
 }
