@@ -80,38 +80,38 @@ export default function ProductForm({
     <form
       ref={formRef}
       action={formAction}
-      className="flex flex-col gap-4 rounded-2xl border border-skn-sand bg-white p-5 shadow-sm"
+      className="skn-card skn-form"
     >
       {product?.id && <input type="hidden" name="id" value={product.id} />}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">שם המוצר *</label>
+        <div className="skn-field">
+          <label className="skn-label">שם המוצר *</label>
           <input
             name="name"
             required
             defaultValue={product?.name ?? ""}
             placeholder="לדוגמה: סרום ויטמין C"
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">מותג</label>
+        <div className="skn-field">
+          <label className="skn-label">מותג</label>
           <input
             name="brand"
             defaultValue={product?.brand ?? ""}
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">קטגוריה</label>
+        <div className="skn-field">
+          <label className="skn-label">קטגוריה</label>
           <input
             name="category"
             defaultValue={product?.category ?? ""}
             placeholder="סרום / קרם / מסכה / מכשיר..."
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
 
@@ -119,25 +119,25 @@ export default function ProductForm({
           <Checkbox
             name="is_device"
             defaultChecked={product?.is_device ?? false}
-            tone="neutral"
+            variant="box"
             label="זהו מכשיר (לא מוצר מתכלה, למשל מסכת LED)"
-            labelClassName="text-sm text-skn-ink/70"
+            labelClassName="text-sm"
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">תאריך פתיחה</label>
+        <div className="skn-field">
+          <label className="skn-label">תאריך פתיחה</label>
           <input
             name="open_date"
             type="date"
             defaultValue={product?.open_date ?? ""}
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
-          <p className="text-xs text-skn-ink/40">השאירי ריק אם עדיין לא נפתח</p>
+          <p className="skn-hint">השאירי ריק אם עדיין לא נפתח</p>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">
+        <div className="skn-field">
+          <label className="skn-label">
             תוקף לאחר פתיחה (בחודשים)
           </label>
           <input
@@ -146,29 +146,29 @@ export default function ProductForm({
             min={1}
             max={60}
             defaultValue={product?.shelf_life_months ?? 6}
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
 
-        <div className="flex flex-col gap-1 sm:col-span-2">
-          <label className="text-sm font-medium text-skn-ink/70">
+        <div className="skn-field sm:col-span-2">
+          <label className="skn-label">
             תאריך תפוגה קבוע (אופציונלי — גובר על החישוב האוטומטי)
           </label>
           <input
             name="expiry_date_override"
             type="date"
             defaultValue={product?.expiry_date_override ?? ""}
-            className="w-full rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20 sm:w-1/2"
+            className="skn-input sm:w-1/2"
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
-        <label className="text-sm font-medium text-skn-ink/70">רכיבים פעילים</label>
-        <div className="flex flex-col gap-2.5 rounded-xl border border-skn-sand/70 p-3">
+        <label className="skn-label">רכיבים פעילים</label>
+        <div className="flex flex-col gap-4 rounded-2xl border border-skn-sand bg-skn-field/60 p-4">
           {INGREDIENT_GROUPS.map((group) => (
             <div key={group.id} className="flex flex-col gap-1.5">
-              <p className="font-mono text-[11px] tracking-wide text-skn-ink/40">
+              <p className="text-[0.8125rem] font-medium text-skn-muted">
                 {group.label}
               </p>
               <div className="flex flex-wrap gap-x-2 gap-y-1.5">
@@ -178,20 +178,20 @@ export default function ProductForm({
                     <span
                       key={ing}
                       className={`inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition-colors ${
-                        isSuggested ? "bg-skn-honey/10 ring-1 ring-skn-honey/50" : ""
+                        isSuggested ? "bg-skn-honey-soft ring-1 ring-skn-honey/40" : ""
                       }`}
                     >
                       <Checkbox
                         name="active_ingredients"
                         value={ing}
                         defaultChecked={product?.active_ingredients?.includes(ing) ?? false}
-                        tone="lilac"
+                        variant="box"
                         label={INGREDIENT_LABELS[ing]}
-                        labelClassName="text-sm text-skn-ink/65"
+                        labelClassName="text-sm"
                         onChange={() => clearSuggested(ing)}
                       />
                       {isSuggested && (
-                        <span className="rounded-full bg-skn-honey/20 px-1.5 py-0.5 text-[10px] font-medium text-skn-honey">
+                        <span className="skn-chip" data-tone="soon">
                           הצעה — לא אושר
                         </span>
                       )}
@@ -204,21 +204,21 @@ export default function ProductForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-xl border border-dashed border-skn-sand p-3">
+      <div className="flex flex-col gap-4 rounded-2xl border border-skn-sand p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-medium text-skn-ink/70">
+          <p className="skn-label">
             יתרונות לעור ומה לא לערבב
           </p>
           <button
             type="button"
             onClick={handleSuggest}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-skn-lilac/30 bg-skn-lilac/10 px-3 py-1.5 text-xs font-medium text-skn-lilac hover:bg-skn-lilac/20"
+            className="skn-btn skn-btn-secondary skn-btn-sm"
           >
             <Sparkles className="h-3.5 w-3.5" />
             הצע תיאור אוטומטי
           </button>
         </div>
-        <p className="text-xs text-skn-ink/40">
+        <p className="skn-hint">
           הטיוטה נוצרת מהרכיבים הפעילים שסימנת למעלה. אם לא סימנת אף רכיב,
           ננסה לזהות רכיב סביר משם/מותג המוצר (לפי מילות מפתח בלבד, בלי
           חיפוש אינטרנט) ונסמן אותו למעלה בצהוב עד שתבדקי ותאשרי אותו.
@@ -226,57 +226,57 @@ export default function ProductForm({
           &ldquo;שמירה&rdquo;.
         </p>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">יתרונות לעור</label>
+        <div className="skn-field">
+          <label className="skn-label">יתרונות לעור</label>
           <textarea
             ref={skinBenefitsRef}
             name="skin_benefits"
             rows={2}
             defaultValue={product?.skin_benefits ?? ""}
             placeholder="למה המוצר משמש ומה הוא עושה לעור..."
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">לא לערבב עם</label>
+        <div className="skn-field">
+          <label className="skn-label">לא לערבב עם</label>
           <textarea
             ref={avoidMixingRef}
             name="avoid_mixing_with"
             rows={2}
             defaultValue={product?.avoid_mixing_with ?? ""}
             placeholder="רכיבים או סוגי מוצרים שלא כדאי לשלב עם זה..."
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-skn-ink/70">הערות</label>
+      <div className="skn-field">
+        <label className="skn-label">הערות</label>
         <textarea
           name="notes"
           rows={2}
           defaultValue={product?.notes ?? ""}
-          className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+          className="skn-input"
         />
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-skn-berry/10 px-3 py-2 text-sm text-skn-berry">{state.error}</p>
+        <p role="alert" className="skn-inline-error">{state.error}</p>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="skn-form-actions">
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+          className="skn-btn skn-btn-primary"
         >
           {pending ? "שומר..." : product?.id ? "שמירת שינויים" : "הוספת מוצר"}
         </button>
         <button
           type="button"
           onClick={onDone}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-skn-ink/55 hover:bg-skn-cream"
+          className="skn-btn skn-btn-ghost"
         >
           ביטול
         </button>

@@ -46,12 +46,6 @@ export const EXPIRY_STATUS_LABEL: Record<ExpiryStatus, string> = {
   expired: "פג תוקף",
 };
 
-export const EXPIRY_STATUS_COLOR: Record<ExpiryStatus, string> = {
-  unopened: "bg-skn-sand/40 text-skn-ink/60 border-skn-sand",
-  fresh: "bg-skn-sage/10 text-skn-sage border-skn-sage/30",
-  soon: "bg-skn-honey/10 text-skn-honey border-skn-honey/30",
-  expired: "bg-skn-berry/10 text-skn-berry border-skn-berry/30",
-};
 
 export type ReminderStatus = "ok" | "due_soon" | "overdue" | "never_done";
 
@@ -96,9 +90,3 @@ export const REMINDER_STATUS_LABEL: Record<ReminderStatus, string> = {
   overdue: "באיחור",
 };
 
-export const REMINDER_STATUS_COLOR: Record<ReminderStatus, string> = {
-  never_done: "bg-skn-sand/40 text-skn-ink/60 border-skn-sand",
-  ok: "bg-skn-sage/10 text-skn-sage border-skn-sage/30",
-  due_soon: "bg-skn-honey/10 text-skn-honey border-skn-honey/30",
-  overdue: "bg-skn-berry/10 text-skn-berry border-skn-berry/30",
-};

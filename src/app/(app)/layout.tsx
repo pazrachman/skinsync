@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({
@@ -17,11 +17,12 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
-        {children}
-      </main>
+    <div className="skn-app">
+      <TopBar
+        displayName={(user.user_metadata?.display_name as string | undefined) ?? null}
+        email={user.email ?? null}
+      />
+      <main className="skn-main">{children}</main>
     </div>
   );
 }

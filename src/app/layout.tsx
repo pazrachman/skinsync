@@ -1,28 +1,18 @@
 import type { Metadata } from "next";
-import { Assistant, Frank_Ruhl_Libre, IBM_Plex_Mono } from "next/font/google";
+import { Inter, Noto_Sans_Hebrew } from "next/font/google";
 import "./globals.css";
 
-// Type system for SkinSync: a Hebrew-native serif for display moments
-// (Frank Ruhl Libre), a warm humanist sans for interface text (Assistant),
-// and a monospace face for the rare label-style micro-copy (IBM Plex Mono).
-const assistant = Assistant({
-  subsets: ["hebrew", "latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-assistant",
-  display: "swap",
-});
-
-const frankRuhlLibre = Frank_Ruhl_Libre({
-  subsets: ["hebrew", "latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-frank-ruhl",
-  display: "swap",
-});
-
-const plexMono = IBM_Plex_Mono({
+// Type: SF Pro (system, not self-hosted) first, then Inter for Latin and
+// Noto Sans Hebrew for Hebrew where SF isn't available. No serif, no mono.
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex-mono",
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const notoSansHebrew = Noto_Sans_Hebrew({
+  subsets: ["hebrew"],
+  variable: "--font-noto-hebrew",
   display: "swap",
 });
 
@@ -37,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="he"
       dir="rtl"
-      className={`h-full antialiased ${assistant.variable} ${frankRuhlLibre.variable} ${plexMono.variable}`}
+      className={`h-full antialiased ${inter.variable} ${notoSansHebrew.variable}`}
     >
       <body className="min-h-full flex flex-col bg-skn-cream font-sans text-skn-ink">
         {children}

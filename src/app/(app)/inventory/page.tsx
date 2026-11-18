@@ -4,7 +4,8 @@ import { logDbError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/types";
 
-export default async function InventoryPage() {
+export default async function InventoryPage({ searchParams }: PageProps<"/inventory">) {
+  const { edit } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -21,5 +22,10 @@ export default async function InventoryPage() {
     return <ErrorState title="לא הצלחנו לטעון את ארון הטיפוח" />;
   }
 
-  return <InventoryManager products={(products ?? []) as Product[]} />;
+  return (
+    <InventoryManager
+      products={(products ?? []) as Product[]}
+      initialEditId={typeof edit === "string" ? edit : null}
+    />
+  );
 }

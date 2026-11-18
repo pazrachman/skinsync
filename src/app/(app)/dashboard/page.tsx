@@ -2,11 +2,23 @@ import Link from "next/link";
 import { CheckCircle2, Sparkles } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import ErrorState from "@/components/ErrorState";
+import ExpiringTiles from "@/components/ExpiringTiles";
+import ReminderList from "@/components/ReminderList";
 import TodayRoutine from "@/components/TodayRoutine";
-import { EXPIRY_STATUS_COLOR, EXPIRY_STATUS_LABEL, getExpiryInfo, getReminderDueInfo } from "@/lib/expiry";
+import { getExpiryInfo, getReminderDueInfo } from "@/lib/expiry";
 import { logDbError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { MaintenanceReminder, Product, ScheduleCompletion, ScheduleItem } from "@/lib/types";
+
+// ברכה לפי השעה בישראל (השרת עצמו רץ ב-UTC).
+function greeting(now: Date) {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Jerusalem" }).format(now)
+  );
+  if (hour >= 5 && hour < 12) return "בוקר טוב";
+  if (hour >= 12 && hour < 17) return "צהריים טובים";
+  return "ערב טוב";
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -18,20 +30,16 @@ export default async function DashboardPage() {
   const todayIso = today.toISOString().slice(0, 10);
   const todayDow = today.getDay();
 
-  const [productsRes, scheduleRes, completionsRes, remindersRes] =
-    await Promise.all([
-      supabase.from("products").select("*").eq("user_id", user!.id),
-      supabase
-        .from("schedule_items")
-        .select("*, product:products(*)")
-        .eq("user_id", user!.id),
-      supabase
-        .from("schedule_completions")
-        .select("*")
-        .eq("user_id", user!.id)
-        .eq("completed_on", todayIso),
-      supabase.from("maintenance_reminders").select("*").eq("user_id", user!.id),
-    ]);
+  const [productsRes, scheduleRes, completionsRes, remindersRes] = await Promise.all([
+    supabase.from("products").select("*").eq("user_id", user!.id),
+    supabase.from("schedule_items").select("*, product:products(*)").eq("user_id", user!.id),
+    supabase
+      .from("schedule_completions")
+      .select("*")
+      .eq("user_id", user!.id)
+      .eq("completed_on", todayIso),
+    supabase.from("maintenance_reminders").select("*").eq("user_id", user!.id),
+  ]);
 
   // קריאה שנכשלה היא לא "אין נתונים" — מציגים שגיאה ברורה במקום מצב ריק.
   const failed = [productsRes, scheduleRes, completionsRes, remindersRes].find((r) => r.error);
@@ -56,107 +64,81 @@ export default async function DashboardPage() {
 
   const dueReminders = remindersTyped
     .map((r) => ({ reminder: r, info: getReminderDueInfo(r) }))
-    .filter((x) => x.info.status === "overdue" || x.info.status === "due_soon" || x.info.status === "never_done")
+    .filter(
+      (x) => x.info.status === "overdue" || x.info.status === "due_soon" || x.info.status === "never_done"
+    )
     .sort((a, b) => (a.info.daysLeft ?? -9999) - (b.info.daysLeft ?? -9999));
 
+  const name = (user?.user_metadata?.display_name as string | undefined)?.trim();
+
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
+    <div>
+      <section className="skn-hero">
         <div>
-          <h1 className="font-display text-2xl font-medium text-skn-ink">
+          <p className="skn-eyebrow">
             {today.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+          <h1 className="skn-title">
+            {greeting(today)}
+            {name ? `, ${name}` : ""}
           </h1>
-          <p className="text-sm text-skn-ink/55">ריכוז מהיר של מה שקורה היום בשגרת הטיפוח שלך</p>
         </div>
 
         {todayItems.length > 0 && (
-          <div className="flex items-center gap-3">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-skn-sand/50">
-              <div
-                className="h-full rounded-full bg-gradient-to-l from-skn-peach to-skn-pink-deep transition-[width] duration-500"
-                style={{ width: `${Math.round((completedTodayCount / todayItems.length) * 100)}%` }}
-              />
+          <div className="skn-hero-progress">
+            <div className="skn-progress-head">
+              <span className="font-medium">השגרה של היום</span>
+              <span className="skn-num text-skn-muted">
+                {completedTodayCount} מתוך {todayItems.length}
+              </span>
             </div>
-            <span className="shrink-0 font-mono text-xs text-skn-ink/50">
-              {completedTodayCount}/{todayItems.length} הושלמו היום
-            </span>
+            <div
+              className="skn-progress"
+              role="progressbar"
+              aria-label="השגרה של היום"
+              aria-valuemin={0}
+              aria-valuemax={todayItems.length}
+              aria-valuenow={completedTodayCount}
+            >
+              <span style={{ width: `${Math.round((completedTodayCount / todayItems.length) * 100)}%` }} />
+            </div>
           </div>
         )}
+      </section>
+
+      <div className="skn-stack">
+        <section className="skn-section" aria-label="השגרה של היום">
+          <TodayRoutine items={todayItems} completedIds={completedIds} date={todayIso} />
+        </section>
+
+        <section className="skn-section">
+          <div className="skn-section-head">
+            <h2 className="skn-section-title">עומדים לפוג</h2>
+            <Link href="/inventory" className="skn-link">
+              לארון
+            </Link>
+          </div>
+          {attention.length === 0 ? (
+            <EmptyState icon={Sparkles}>אין מוצרים שפג תוקפם או מתקרבים לתפוגה</EmptyState>
+          ) : (
+            <ExpiringTiles products={attention.map((a) => a.product)} />
+          )}
+        </section>
+
+        <section className="skn-section">
+          <div className="skn-section-head">
+            <h2 className="skn-section-title">תזכורות</h2>
+            <Link href="/reminders" className="skn-link">
+              לכל התזכורות
+            </Link>
+          </div>
+          {dueReminders.length === 0 ? (
+            <EmptyState icon={CheckCircle2}>הכל מסודר, אין תזכורות שממתינות כרגע.</EmptyState>
+          ) : (
+            <ReminderList reminders={dueReminders.map((d) => d.reminder)} />
+          )}
+        </section>
       </div>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-skn-ink/85">השגרה של היום</h2>
-        <TodayRoutine items={todayItems} completedIds={completedIds} date={todayIso} />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-skn-ink/85">מוצרים שדורשים תשומת לב</h2>
-          <Link href="/inventory" className="text-sm font-medium text-skn-pink-deep hover:underline">
-            לכל הארון
-          </Link>
-        </div>
-        {attention.length === 0 ? (
-          <EmptyState icon={Sparkles} tone="sage">
-            אין מוצרים שפג תוקפם או מתקרבים לתפוגה
-          </EmptyState>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {attention.map(({ product, info }) => (
-              <li
-                key={product.id}
-                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <span className="font-medium text-skn-ink/85">
-                  {product.name}
-                  {product.brand && <span className="text-skn-ink/40"> · {product.brand}</span>}
-                </span>
-                <span
-                  className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${EXPIRY_STATUS_COLOR[info.status]}`}
-                >
-                  {EXPIRY_STATUS_LABEL[info.status]}
-                  {info.daysLeft !== null &&
-                    (info.status === "expired"
-                      ? ` · לפני ${Math.abs(info.daysLeft)} ימים`
-                      : ` · בעוד ${info.daysLeft} ימים`)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-skn-ink/85">תזכורות תחזוקה</h2>
-          <Link href="/reminders" className="text-sm font-medium text-skn-pink-deep hover:underline">
-            לכל התזכורות
-          </Link>
-        </div>
-        {dueReminders.length === 0 ? (
-          <EmptyState icon={CheckCircle2} tone="sage">
-            הכל מסודר, אין תזכורות שממתינות כרגע.
-          </EmptyState>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {dueReminders.map(({ reminder, info }) => (
-              <li
-                key={reminder.id}
-                className="flex items-center justify-between rounded-2xl border border-skn-sand bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <span className="font-medium text-skn-ink/85">{reminder.title}</span>
-                <span className="text-xs text-skn-ink/55">
-                  {info.status === "never_done"
-                    ? "טרם בוצע"
-                    : info.status === "overdue"
-                    ? `באיחור של ${Math.abs(info.daysLeft ?? 0)} ימים`
-                    : `בעוד ${info.daysLeft} ימים`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
   );
 }

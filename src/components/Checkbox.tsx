@@ -1,49 +1,37 @@
 "use client";
 
-import { Check } from "lucide-react";
 import type { InputHTMLAttributes, ReactNode } from "react";
 
-const TONE_CLASSES: Record<"pink" | "lilac" | "neutral", string> = {
-  pink: "peer-checked:border-skn-pink-deep peer-checked:bg-skn-pink-deep peer-focus-visible:ring-skn-pink/30",
-  lilac: "peer-checked:border-skn-lilac peer-checked:bg-skn-lilac peer-focus-visible:ring-skn-lilac/30",
-  neutral: "peer-checked:border-skn-ink/50 peer-checked:bg-skn-ink/50 peer-focus-visible:ring-skn-ink/20",
-};
-
-interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
+interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
   label?: ReactNode;
-  tone?: "pink" | "lilac" | "neutral";
+  /** ritual: round 24px (routine) · dot: round 18px tinted by slot (week) · box: form field */
+  variant?: "ritual" | "dot" | "box";
+  slot?: "morning" | "evening";
   labelClassName?: string;
 }
 
-// כפתור סימון מותאם למותג — אותה אינטראקציה (סימון = ריטואל שהושלם) חוזרת
-// בכל מקום שבו יש checkbox באתר: שגרת היום, שגרה שבועית, רכיבים פעילים.
+// סימון = ריטואל שהושלם: העיגול מתמלא בצבע הסרום, ה-V נמשך והשם נמחק
+// בקו — הכל ב-CSS (ראו .skn-check ב-globals.css). ביטול סימון מיידי.
 export default function Checkbox({
   label,
-  tone = "pink",
+  variant = "ritual",
+  slot,
   className,
   labelClassName,
   ...props
 }: CheckboxProps) {
   return (
-    <label
-      className={`inline-flex cursor-pointer items-center gap-2 ${className ?? ""}`}
-    >
-      <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
-        <input
-          type="checkbox"
-          className="peer absolute inset-0 h-full w-full cursor-pointer appearance-none"
-          {...props}
-        />
-        <span
-          className={`pointer-events-none h-4 w-4 rounded border border-skn-sand bg-white transition-colors duration-150 peer-focus-visible:ring-2 ${TONE_CLASSES[tone]}`}
-        />
-        <Check
-          strokeWidth={3}
-          className="pointer-events-none absolute h-3 w-3 scale-0 text-white opacity-0 transition-all duration-150 peer-checked:scale-100 peer-checked:opacity-100"
-        />
+    <label className={`skn-check ${className ?? ""}`} data-variant={variant} data-slot={slot}>
+      <input type="checkbox" className="skn-check-input" {...props} />
+      <span className="skn-check-box" aria-hidden>
+        <svg viewBox="0 0 24 24">
+          <path d="M7.2 12.4 10.4 15.6 16.8 9" />
+        </svg>
       </span>
       {label !== undefined && (
-        <span className={labelClassName}>{label}</span>
+        <span className={`skn-check-text ${labelClassName ?? ""}`}>
+          <span>{label}</span>
+        </span>
       )}
     </label>
   );

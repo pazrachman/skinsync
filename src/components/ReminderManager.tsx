@@ -1,21 +1,12 @@
 "use client";
 
-import { useActionState, useMemo, useState, useTransition } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Droplet } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
-import InlineError from "@/components/InlineError";
-import {
-  deleteReminder,
-  markReminderDone,
-  upsertReminder,
-  type ReminderFormState,
-} from "@/lib/actions/reminders";
-import { ERR_NETWORK, type ActionResult } from "@/lib/errors";
-import {
-  REMINDER_STATUS_COLOR,
-  REMINDER_STATUS_LABEL,
-  getReminderDueInfo,
-} from "@/lib/expiry";
+import PageHeader from "@/components/PageHeader";
+import ReminderList from "@/components/ReminderList";
+import { upsertReminder, type ReminderFormState } from "@/lib/actions/reminders";
+import { getReminderDueInfo } from "@/lib/expiry";
 import type { MaintenanceReminder } from "@/lib/types";
 
 const initialState: ReminderFormState = { error: null };
@@ -30,59 +21,59 @@ function ReminderForm({ onDone }: { onDone: () => void }) {
   const [state, formAction, pending] = useActionState(upsertReminder, initialState);
 
   return (
-    <form
-      action={formAction}
-      className="flex flex-col gap-3 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm"
-    >
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">שם המשימה *</label>
+    <form action={formAction} className="skn-card skn-form mb-8">
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="skn-field">
+          <label className="skn-label" htmlFor="reminder-title">
+            שם המשימה *
+          </label>
           <input
+            id="reminder-title"
             name="title"
             required
             placeholder="לדוגמה: חיטוי ציפית משי"
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">כל כמה ימים חוזרת</label>
+        <div className="skn-field">
+          <label className="skn-label" htmlFor="reminder-cadence">
+            כל כמה ימים חוזרת
+          </label>
           <input
+            id="reminder-cadence"
             name="cadence_days"
             type="number"
             min={1}
             max={365}
             defaultValue={7}
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+            className="skn-input"
           />
         </div>
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-skn-ink/70">הערות</label>
+      <div className="skn-field">
+        <label className="skn-label" htmlFor="reminder-notes">
+          הערות
+        </label>
         <textarea
+          id="reminder-notes"
           name="notes"
           rows={2}
           placeholder="לדוגמה: חומצה היפוכלורית מדוללת, לשטוף היטב אחרי 5 דק׳"
-          className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
+          className="skn-input"
         />
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-skn-berry/10 px-3 py-2 text-sm text-skn-berry">{state.error}</p>
+        <p role="alert" className="skn-inline-error">
+          {state.error}
+        </p>
       )}
 
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-lg bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white hover:brightness-90 disabled:opacity-60"
-        >
+      <div className="skn-form-actions">
+        <button type="submit" disabled={pending} className="skn-btn skn-btn-primary">
           {pending ? "שומר..." : "הוספת תזכורת"}
         </button>
-        <button
-          type="button"
-          onClick={onDone}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-skn-ink/55 hover:bg-skn-cream"
-        >
+        <button type="button" onClick={onDone} className="skn-btn skn-btn-ghost">
           ביטול
         </button>
       </div>
@@ -90,113 +81,49 @@ function ReminderForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-export default function ReminderManager({
-  reminders,
-}: {
-  reminders: MaintenanceReminder[];
-}) {
+export default function ReminderManager({ reminders }: { reminders: MaintenanceReminder[] }) {
   const [formOpen, setFormOpen] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
-
-  function run(action: () => Promise<ActionResult>) {
-    setActionError(null);
-    startTransition(async () => {
-      try {
-        const result = await action();
-        if (result.error) setActionError(result.error);
-      } catch {
-        setActionError(ERR_NETWORK);
-      }
-    });
-  }
 
   const sorted = useMemo(
     () =>
       [...reminders].sort(
-        (a, b) => STATUS_ORDER[getReminderDueInfo(a).status] - STATUS_ORDER[getReminderDueInfo(b).status]
+        (a, b) =>
+          STATUS_ORDER[getReminderDueInfo(a).status] - STATUS_ORDER[getReminderDueInfo(b).status]
       ),
     [reminders]
   );
 
+  const waiting = sorted.filter((r) => getReminderDueInfo(r).status !== "ok").length;
+  const eyebrow = [`${reminders.length} תזכורות`, waiting > 0 && `${waiting} ממתינות`]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-xl font-medium text-skn-ink">תזכורות תחזוקה והיגיינה</h1>
-        {!formOpen && (
-          <button
-            onClick={() => setFormOpen(true)}
-            className="rounded-xl bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
-          >
-            + תזכורת חדשה
-          </button>
-        )}
-      </div>
-
-      <p className="text-sm text-skn-ink/55">
-        משימות תחזוקה שאינן נמרחות ישירות על הפנים — למשל ניקוי מברשות איפור, חיטוי ציפית
-        משי, או ניקוי מכשירי טיפוח.
-      </p>
-
-      <InlineError message={actionError} onDismiss={() => setActionError(null)} />
+    <div>
+      <PageHeader
+        eyebrow={eyebrow}
+        title="תזכורות"
+        actions={
+          !formOpen && (
+            <button type="button" onClick={() => setFormOpen(true)} className="skn-btn skn-btn-primary">
+              תזכורת חדשה
+            </button>
+          )
+        }
+      >
+        <p className="skn-page-lede">
+          משימות תחזוקה שאינן נמרחות ישירות על הפנים — למשל ניקוי מברשות איפור, חיטוי ציפית משי,
+          או ניקוי מכשירי טיפוח.
+        </p>
+      </PageHeader>
 
       {formOpen && <ReminderForm onDone={() => setFormOpen(false)} />}
 
       {sorted.length === 0 && !formOpen && (
-        <EmptyState icon={Droplet}>
-          עדיין אין תזכורות תחזוקה. הוסיפי את הראשונה.
-        </EmptyState>
+        <EmptyState icon={Droplet}>עדיין אין תזכורות תחזוקה. הוסיפי את הראשונה.</EmptyState>
       )}
 
-      <ul className="flex flex-col gap-3">
-        {sorted.map((r) => {
-          const info = getReminderDueInfo(r);
-          return (
-            <li
-              key={r.id}
-              className="flex flex-col gap-2 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="flex flex-col gap-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-skn-ink">{r.title}</span>
-                  <span
-                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${REMINDER_STATUS_COLOR[info.status]}`}
-                  >
-                    {REMINDER_STATUS_LABEL[info.status]}
-                    {info.daysLeft !== null &&
-                      (info.status === "overdue"
-                        ? ` · באיחור של ${Math.abs(info.daysLeft)} ימים`
-                        : ` · בעוד ${info.daysLeft} ימים`)}
-                  </span>
-                </div>
-                <p className="text-xs text-skn-ink/40">
-                  כל {r.cadence_days} ימים
-                  {r.last_done_on &&
-                    ` · בוצע לאחרונה ב-${new Date(r.last_done_on).toLocaleDateString("he-IL")}`}
-                </p>
-                {r.notes && <p className="text-sm text-skn-ink/55">{r.notes}</p>}
-              </div>
-
-              <div className="flex shrink-0 gap-2">
-                <button
-                  disabled={pending}
-                  onClick={() => run(() => markReminderDone(r.id))}
-                  className="rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-1.5 text-xs font-medium text-skn-sage hover:bg-skn-sage/20"
-                >
-                  בוצע היום
-                </button>
-                <button
-                  disabled={pending}
-                  onClick={() => run(() => deleteReminder(r.id))}
-                  className="rounded-lg border border-skn-berry/30 px-3 py-1.5 text-xs font-medium text-skn-berry hover:bg-skn-berry/10"
-                >
-                  מחיקה
-                </button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      {sorted.length > 0 && <ReminderList reminders={sorted} allowDelete />}
     </div>
   );
 }

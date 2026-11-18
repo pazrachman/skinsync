@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { CircleCheck, TriangleAlert, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { X } from "lucide-react";
 import { deleteProduct, markProductOpened } from "@/lib/actions/products";
-import ExpiryBadge from "@/components/ExpiryBadge";
 import InlineError from "@/components/InlineError";
 import IngredientTags from "@/components/IngredientTags";
 import ProductBottle from "@/components/ProductBottle";
+import StatusChip from "@/components/StatusChip";
 import { ERR_NETWORK, type ActionResult } from "@/lib/errors";
-import { getExpiryInfo } from "@/lib/expiry";
+import { EXPIRY_STATUS_LABEL, getExpiryInfo } from "@/lib/expiry";
 import { categorizeProduct, PRODUCT_CATEGORIES } from "@/lib/productCategories";
 import type { Product } from "@/lib/types";
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("he-IL");
+}
 
 export default function ProductDetailModal({
   product,
@@ -26,6 +30,18 @@ export default function ProductDetailModal({
     null
   );
   const [pending, startTransition] = useTransition();
+  const [closing, setClosing] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+
+  // סגירה עם אנימציית יציאה קצרה (150ms); onClose נקרא כשהיא מסתיימת.
+  const requestClose = useCallback(() => setClosing(true), []);
+
+  function finishClose() {
+    setClosing(false);
+    onClose();
+    returnFocusRef.current?.focus?.();
+  }
 
   function run(productId: string, action: () => Promise<ActionResult>, onSuccess?: () => void) {
     setActionError(null);
@@ -43,8 +59,11 @@ export default function ProductDetailModal({
   useEffect(() => {
     if (!product) return;
 
+    returnFocusRef.current = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
     };
     document.addEventListener("keydown", onKeyDown);
     const prevOverflow = document.body.style.overflow;
@@ -54,109 +73,123 @@ export default function ProductDetailModal({
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-  }, [product, onClose]);
+  }, [product, requestClose]);
 
   if (!product) return null;
 
-  const status = getExpiryInfo(product).status;
-  const categoryId = categorizeProduct(product);
-  const categoryLabel = PRODUCT_CATEGORIES.find((c) => c.id === categoryId)?.label;
-  const shape = PRODUCT_CATEGORIES.find((c) => c.id === categoryId)?.shape ?? "bottle";
+  const info = getExpiryInfo(product);
+  const category = PRODUCT_CATEGORIES.find((c) => c.id === categorizeProduct(product));
+  const titleId = `product-${product.id}-title`;
+
+  const left =
+    info.status === "unopened"
+      ? "—"
+      : info.status === "expired"
+        ? `פג לפני ${Math.abs(info.daysLeft ?? 0)} ימים`
+        : `${info.daysLeft} ימים`;
 
   return (
     <div
-      className="skn-animate-fade-up fixed inset-0 z-50 flex items-center justify-center bg-skn-ink/40 p-4 backdrop-blur-sm"
-      style={{ animationDuration: "0.2s" }}
-      onClick={onClose}
+      className="skn-modal-overlay"
+      data-closing={closing || undefined}
+      onClick={requestClose}
+      onAnimationEnd={(e) => {
+        if (closing && e.target === e.currentTarget) finishClose();
+      }}
     >
       <div
-        className="skn-animate-modal-in relative w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="skn-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          aria-label="סגירה"
-          className="absolute left-4 top-4 rounded-full p-1.5 text-skn-ink/40 transition hover:bg-skn-cream hover:text-skn-ink"
-        >
+        <button type="button" onClick={requestClose} aria-label="סגירה" className="skn-modal-close">
           <X className="h-4 w-4" />
         </button>
 
-        <div className="flex flex-col items-center gap-4 text-center">
-          <ProductBottle name={product.name} status={status} shape={shape} />
-
-          <div>
-            <h2 className="font-display text-xl font-medium text-skn-ink">{product.name}</h2>
-            {product.brand && <p className="text-sm text-skn-ink/50">{product.brand}</p>}
+        <div className="skn-modal-grid">
+          <div className="skn-modal-picture">
+            <ProductBottle product={product} className="h-[150px] w-auto" />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {categoryLabel && (
-              <span className="rounded-full bg-skn-cream px-2.5 py-0.5 text-xs font-medium text-skn-ink/60">
-                {categoryLabel}
-              </span>
-            )}
-            {product.is_device && (
-              <span className="rounded-full bg-skn-peach/10 px-2.5 py-0.5 text-xs font-medium text-skn-peach">
-                מכשיר
-              </span>
-            )}
-            <ExpiryBadge product={product} />
-          </div>
+          <div className="flex min-w-0 flex-col gap-4">
+            <div>
+              <h2 id={titleId} className="skn-modal-title">
+                {product.name}
+              </h2>
+              {(product.brand || category) && (
+                <p className="mt-1 text-[0.9375rem] text-skn-muted">
+                  {[product.brand, category?.label].filter(Boolean).join(" · ")}
+                </p>
+              )}
+            </div>
 
-          <IngredientTags ingredients={product.active_ingredients} />
+            <div className="flex flex-wrap gap-1.5">
+              {!product.is_device && (
+                <StatusChip tone={info.status}>{EXPIRY_STATUS_LABEL[info.status]}</StatusChip>
+              )}
+              {product.is_device && <StatusChip tone="unopened">מכשיר</StatusChip>}
+            </div>
 
-          {product.skin_benefits && (
-            <div className="w-full rounded-xl border border-skn-sage/25 bg-skn-sage/10 p-3 text-right">
-              <div className="flex items-center gap-1.5 text-sm font-semibold text-skn-sage">
-                <CircleCheck className="h-4 w-4 shrink-0" />
-                יתרונות לעור
+            {!product.is_device && (
+              <dl className="skn-facts">
+                <dt>נפתח</dt>
+                <dd>{product.open_date ? formatDate(product.open_date) : "עוד לא נפתח"}</dd>
+                <dt>תוקף מהפתיחה</dt>
+                <dd>{product.shelf_life_months} חודשים</dd>
+                {product.expiry_date_override && (
+                  <>
+                    <dt>תאריך תפוגה</dt>
+                    <dd>{formatDate(product.expiry_date_override)}</dd>
+                  </>
+                )}
+                <dt>נשאר</dt>
+                <dd>{left}</dd>
+              </dl>
+            )}
+
+            <IngredientTags ingredients={product.active_ingredients} />
+
+            {product.skin_benefits && (
+              <div className="skn-note-box bg-skn-sage-soft">
+                <p className="font-semibold text-skn-sage">יתרונות לעור</p>
+                <p className="mt-0.5 whitespace-pre-line text-skn-ink">{product.skin_benefits}</p>
               </div>
-              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-skn-ink/70">
-                {product.skin_benefits}
+            )}
+
+            <div className="skn-note-box bg-skn-berry-soft">
+              <p className="font-semibold text-skn-berry">לא לערבב עם</p>
+              <p className="mt-0.5 whitespace-pre-line text-skn-ink">
+                {product.avoid_mixing_with?.trim() || "לא ידוע על התנגשות עם מוצר אחר"}
               </p>
             </div>
-          )}
 
-          <div className="w-full rounded-xl border border-skn-berry/25 bg-skn-berry/10 p-3 text-right">
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-skn-berry">
-              <TriangleAlert className="h-4 w-4 shrink-0" />
-              לא לערבב עם
-            </div>
-            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-skn-ink/70">
-              {product.avoid_mixing_with?.trim() || "לא ידוע על התנגשות עם מוצר אחר"}
-            </p>
+            {product.notes && <p className="text-sm leading-relaxed text-skn-muted">{product.notes}</p>}
           </div>
-
-          {product.notes && (
-            <p className="text-sm leading-relaxed text-skn-ink/55">{product.notes}</p>
-          )}
-
-          {product.open_date && (
-            <p className="font-mono text-[11px] text-skn-ink/35">
-              נפתח ב-{new Date(product.open_date).toLocaleDateString("he-IL")}
-            </p>
-          )}
         </div>
 
-        <div className="mt-6 flex flex-col gap-2">
+        <div className="mt-5">
           <InlineError
             message={actionError?.productId === product.id ? actionError.message : null}
             onDismiss={() => setActionError(null)}
           />
+        </div>
+
+        <div className="skn-modal-actions">
           {!product.open_date && !product.expiry_date_override && !product.is_device && (
             <button
               type="button"
               disabled={pending}
               onClick={() => run(product.id, () => markProductOpened(product.id))}
-              className="w-full rounded-lg border border-skn-sage/30 bg-skn-sage/10 px-3 py-2 text-sm font-medium text-skn-sage hover:bg-skn-sage/20 disabled:opacity-60"
+              className="skn-btn skn-btn-primary"
             >
-              סמני כנפתח היום
+              סימון כנפתח היום
             </button>
           )}
-          <button
-            onClick={() => onEdit(product)}
-            className="w-full rounded-lg border border-skn-sand px-3 py-2 text-sm font-medium text-skn-ink/65 hover:bg-skn-cream"
-          >
+          <button type="button" onClick={() => onEdit(product)} className="skn-btn skn-btn-secondary">
             עריכה
           </button>
           <button
@@ -164,7 +197,7 @@ export default function ProductDetailModal({
             disabled={pending}
             // סוגרים את החלון רק אחרי שהמחיקה באמת הצליחה
             onClick={() => run(product.id, () => deleteProduct(product.id), onClose)}
-            className="w-full rounded-lg border border-skn-berry/30 px-3 py-2 text-sm font-medium text-skn-berry hover:bg-skn-berry/10 disabled:opacity-60"
+            className="skn-btn skn-btn-quiet"
           >
             מחיקה
           </button>

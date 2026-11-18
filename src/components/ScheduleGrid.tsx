@@ -1,55 +1,33 @@
 "use client";
 
+import { parseISO } from "date-fns";
 import { useActionState, useMemo, useRef, useState, useTransition } from "react";
-import { Droplet, Moon, Sun } from "lucide-react";
+import { Droplet, TriangleAlert, X } from "lucide-react";
 import Checkbox from "@/components/Checkbox";
 import EmptyState from "@/components/EmptyState";
 import InlineError from "@/components/InlineError";
-import MiniBottleIcon from "@/components/MiniBottleIcon";
+import PageHeader from "@/components/PageHeader";
+import { conflictText } from "@/components/TodayRoutine";
 import { completionKey, useCompletionToggle } from "@/components/useCompletionToggle";
-import {
-  addScheduleItem,
-  deleteScheduleItem,
-  type ScheduleFormState,
-} from "@/lib/actions/schedule";
+import { addScheduleItem, deleteScheduleItem, type ScheduleFormState } from "@/lib/actions/schedule";
 import { ERR_NETWORK } from "@/lib/errors";
 import { findConflicts } from "@/lib/ingredients";
-import { INGREDIENT_LABELS } from "@/lib/ingredients";
 import type { Product, ScheduleCompletion, ScheduleItem, TimeOfDay } from "@/lib/types";
 
 const DAY_LABELS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
-const SLOTS: { key: TimeOfDay; label: string; icon: typeof Sun }[] = [
-  { key: "morning", label: "בוקר", icon: Sun },
-  { key: "evening", label: "ערב", icon: Moon },
+const SLOTS: { key: TimeOfDay; label: string }[] = [
+  { key: "morning", label: "בוקר" },
+  { key: "evening", label: "ערב" },
 ];
-
-// גוון הבקבוקון ליד כל פריט בשגרה נושא את הזמן ביום — אותם צבעים כמו קו
-// "בוקר → ערב" בעמוד ההתחברות. אותם גוונים גם צובעים את פאנל המשבצת של
-// כל זמן ביום, כדי שהתא לא יהיה שטח לבן ריק אלא ייצג חזותית בוקר/ערב.
-const SLOT_BOTTLE_FILL: Record<TimeOfDay, string> = {
-  morning: "fill-skn-peach/50",
-  evening: "fill-skn-pink/40",
-};
-
-const SLOT_PANEL: Record<TimeOfDay, string> = {
-  morning: "bg-skn-peach/10",
-  evening: "bg-skn-pink/8",
-};
-
-const SLOT_ICON: Record<TimeOfDay, string> = {
-  morning: "text-skn-peach",
-  evening: "text-skn-pink-deep",
-};
 
 const initialState: ScheduleFormState = { error: null };
 
-function AddScheduleItemForm({ products }: { products: Product[] }) {
-  const [open, setOpen] = useState(false);
+function AddScheduleItemForm({ products, onDone }: { products: Product[]; onDone: () => void }) {
   // סוגרים את הטופס רק אם השמירה הצליחה — אחרת השגיאה נשארת גלויה
   const [state, formAction, pending] = useActionState(
     async (prev: ScheduleFormState, fd: FormData) => {
       const result = await addScheduleItem(prev, fd);
-      if (!result.error) setOpen(false);
+      if (!result.error) onDone();
       return result;
     },
     initialState
@@ -64,30 +42,14 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
       });
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="rounded-xl bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
-      >
-        + שיבוץ מוצר לשגרה
-      </button>
-    );
-  }
-
   return (
-    <form
-      action={formAction}
-      className="flex flex-col gap-3 rounded-2xl border border-skn-sand bg-white p-4 shadow-sm"
-    >
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">מוצר / מכשיר</label>
-          <select
-            name="product_id"
-            required
-            className="rounded-lg border border-skn-sand px-3 py-2 text-sm text-skn-ink focus:border-skn-pink focus:outline-none focus:ring-2 focus:ring-skn-pink/20"
-          >
+    <form action={formAction} className="skn-card skn-form mb-8">
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="skn-field">
+          <label className="skn-label" htmlFor="schedule-product">
+            מוצר / מכשיר
+          </label>
+          <select id="schedule-product" name="product_id" required className="skn-input">
             <option value="">בחרי מוצר...</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>
@@ -98,42 +60,40 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
           </select>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-skn-ink/70">זמן ביום</label>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 pt-2">
+        <div className="skn-field">
+          <span className="skn-label">זמן ביום</span>
+          <div className="flex flex-wrap gap-x-5 gap-y-1 pt-1.5">
             {SLOTS.map((slot) => (
               <Checkbox
                 key={slot.key}
+                variant="box"
                 name="time_of_day"
                 value={slot.key}
                 defaultChecked={slot.key === "morning"}
                 label={slot.label}
-                labelClassName="text-sm text-skn-ink/65"
+                labelClassName="text-[0.9375rem]"
               />
             ))}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="skn-field">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-skn-ink/70">ימים בשבוע</label>
-          <button
-            type="button"
-            onClick={selectAllDays}
-            className="text-xs font-medium text-skn-pink-deep hover:underline"
-          >
-            בחר/י את כל הימים
+          <span className="skn-label">ימים בשבוע</span>
+          <button type="button" onClick={selectAllDays} className="skn-link text-sm">
+            בחירת כל הימים
           </button>
         </div>
-        <div ref={daysContainerRef} className="flex flex-wrap gap-x-3 gap-y-1">
+        <div ref={daysContainerRef} className="flex flex-wrap gap-x-5 gap-y-1">
           {DAY_LABELS.map((label, idx) => (
             <Checkbox
               key={idx}
+              variant="box"
               name="days_of_week"
               value={idx}
               label={label}
-              labelClassName="text-sm text-skn-ink/65"
+              labelClassName="text-[0.9375rem]"
             />
           ))}
         </div>
@@ -141,24 +101,25 @@ function AddScheduleItemForm({ products }: { products: Product[] }) {
 
       <InlineError message={state.error} />
 
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-lg bg-skn-pink-deep px-4 py-2 text-sm font-semibold text-white hover:brightness-90 disabled:opacity-60"
-        >
+      <div className="skn-form-actions">
+        <button type="submit" disabled={pending} className="skn-btn skn-btn-primary">
           {pending ? "משבצת..." : "שיבוץ"}
         </button>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-skn-ink/55 hover:bg-skn-cream"
-        >
+        <button type="button" onClick={onDone} className="skn-btn skn-btn-ghost">
           ביטול
         </button>
       </div>
     </form>
   );
+}
+
+function weekRange(weekDates: string[]) {
+  const first = parseISO(weekDates[0]);
+  const last = parseISO(weekDates[6]);
+  const month = (d: Date) => d.toLocaleDateString("he-IL", { month: "long" });
+  return month(first) === month(last)
+    ? `${first.getDate()}–${last.getDate()} ב${month(last)}`
+    : `${first.getDate()} ב${month(first)} – ${last.getDate()} ב${month(last)}`;
 }
 
 export default function ScheduleGrid({
@@ -178,6 +139,7 @@ export default function ScheduleGrid({
   );
   const { isDone, toggle, error, setError } = useCompletionToggle(serverDoneKeys);
   const [, startDelete] = useTransition();
+  const [formOpen, setFormOpen] = useState(false);
   const todayIso = new Date().toISOString().slice(0, 10);
 
   function handleDelete(id: string) {
@@ -193,140 +155,120 @@ export default function ScheduleGrid({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-xl font-medium text-skn-ink">שגרה שבועית</h1>
-        <AddScheduleItemForm products={products} />
+    <div>
+      <PageHeader
+        eyebrow={weekRange(weekDates)}
+        title="שגרה שבועית"
+        actions={
+          !formOpen && (
+            <button type="button" onClick={() => setFormOpen(true)} className="skn-btn skn-btn-primary">
+              שיבוץ מוצר
+            </button>
+          )
+        }
+      />
+
+      {formOpen && <AddScheduleItemForm products={products} onDone={() => setFormOpen(false)} />}
+
+      <div className="mb-4">
+        <InlineError message={error} onDismiss={() => setError(null)} />
       </div>
 
-      <InlineError message={error} onDismiss={() => setError(null)} />
-
       {scheduleItems.length === 0 && (
-        <EmptyState icon={Droplet}>
-          עדיין לא שיבצת מוצרים לשגרה. השתמשי ב&ldquo;שיבוץ מוצר לשגרה&rdquo; כדי להתחיל.
-        </EmptyState>
+        <div className="mb-6">
+          <EmptyState icon={Droplet}>
+            עדיין לא שיבצת מוצרים לשגרה. השתמשי ב&ldquo;שיבוץ מוצר&rdquo; כדי להתחיל.
+          </EmptyState>
+        </div>
       )}
 
-      {/* פריצה מרוחב עמוד האפליקציה (max-w-5xl) כדי שהריבועים ינצלו את
-          רוחב המסך במקום להצטופף באמצע — רק חלק הרשת, לא כותרת העמוד. */}
-      <div className="w-screen mx-[calc(50%-50vw)] px-4 sm:px-6 lg:px-10">
-      <div className="mx-auto grid max-w-[100rem] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-7">
+      <div className="skn-legend" aria-hidden>
+        <span>
+          <i style={{ background: "var(--color-skn-serum)" }} />
+          בוקר
+        </span>
+        <span>
+          <i style={{ background: "var(--color-skn-dusk)" }} />
+          ערב
+        </span>
+      </div>
+
+      <div className="skn-week">
         {weekDates.map((date, dayIdx) => {
           const isToday = date === todayIso;
           const dayItems = scheduleItems.filter((it) => it.days_of_week.includes(dayIdx));
           const dayDone = dayItems.filter((it) => isDone(it.id, date)).length;
 
-          const dayComplete = dayItems.length > 0 && dayDone === dayItems.length;
-
           return (
-          <div
-            key={date}
-            className={`flex flex-col gap-3 overflow-hidden rounded-3xl border bg-gradient-to-b p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-              isToday
-                ? "border-skn-pink-deep/40 from-skn-pink/10 to-white"
-                : "border-skn-sand from-skn-cream-deep/50 to-white"
-            }`}
-          >
-            <div
-              aria-hidden
-              className="-mx-4 -mt-4 h-1.5 bg-gradient-to-l from-skn-peach to-skn-pink-deep"
-            />
+            <section
+              key={date}
+              className="skn-card skn-day"
+              data-today={isToday || undefined}
+              aria-label={`${DAY_LABELS[dayIdx]}${isToday ? " (היום)" : ""}`}
+            >
+              <div>
+                <p className="skn-day-name">
+                  <span>{DAY_LABELS[dayIdx]}</span>
+                  {isToday && <span className="text-skn-ink">היום</span>}
+                </p>
+                <p className="skn-day-date mt-1">{parseISO(date).getDate()}</p>
+              </div>
 
-            <div className="flex items-center justify-between gap-1">
-              <div className="text-center flex-1">
-                <p className="flex items-center justify-center gap-1.5 text-base font-semibold text-skn-ink">
-                  {DAY_LABELS[dayIdx]}
-                  {isToday && (
-                    <span className="rounded-full bg-skn-pink-deep px-1.5 py-0.5 font-mono text-[9px] font-normal text-white">
-                      היום
-                    </span>
-                  )}
-                </p>
-                <p className="text-xs text-skn-ink/40">
-                  {new Date(date).toLocaleDateString("he-IL", { day: "numeric", month: "numeric" })}
-                </p>
+              <div className="skn-day-progress" aria-hidden>
+                <span
+                  style={{
+                    width: dayItems.length ? `${Math.round((dayDone / dayItems.length) * 100)}%` : "0%",
+                  }}
+                />
               </div>
               {dayItems.length > 0 && (
-                <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold ${
-                    dayComplete
-                      ? "bg-skn-sage/20 text-skn-sage"
-                      : "bg-skn-cream text-skn-ink/45"
-                  }`}
-                >
-                  {dayDone}/{dayItems.length}
-                </span>
+                <p className="sr-only">
+                  {dayDone} מתוך {dayItems.length} הושלמו
+                </p>
               )}
-            </div>
 
-            {SLOTS.map((slot) => {
-              const items = scheduleItems.filter(
-                (it) => it.time_of_day === slot.key && it.days_of_week.includes(dayIdx)
-              );
-              const conflicts = findConflicts(
-                items.flatMap((it) => it.product?.active_ingredients ?? [])
-              );
+              {dayItems.length === 0 && <p className="skn-day-rest">אין מוצרים משובצים</p>}
 
-              const SlotIcon = slot.icon;
+              {SLOTS.map((slot) => {
+                const items = dayItems.filter((it) => it.time_of_day === slot.key);
+                if (items.length === 0) return null;
+                const conflicts = findConflicts(items.flatMap((it) => it.product?.active_ingredients ?? []));
 
-              return (
-                <div key={slot.key} className={`flex flex-col gap-1.5 rounded-2xl p-2.5 ${SLOT_PANEL[slot.key]}`}>
-                  <p className="flex items-center gap-1.5 text-xs font-semibold text-skn-ink/55">
-                    <SlotIcon className={`h-3.5 w-3.5 ${SLOT_ICON[slot.key]}`} />
-                    {slot.label}
-                  </p>
-
-                  {items.length === 0 && (
-                    <p className="rounded-lg border border-dashed border-skn-ink/10 px-2 py-1.5 text-center text-[11px] text-skn-ink/30">
-                      אין מוצר משובץ
-                    </p>
-                  )}
-
-                  {items.map((item) => {
-                    const done = isDone(item.id, date);
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between gap-1.5 rounded-xl bg-white/70 px-2.5 py-1.5 shadow-sm transition hover:bg-white"
-                      >
-                        <MiniBottleIcon
-                          fillClassName={SLOT_BOTTLE_FILL[slot.key]}
-                          className="h-4 w-auto shrink-0"
-                        />
+                return (
+                  <div key={slot.key} className="skn-day-group" aria-label={slot.label} role="group">
+                    {items.map((item) => (
+                      <div key={item.id} className="skn-day-item">
                         <Checkbox
-                          checked={done}
+                          variant="dot"
+                          slot={slot.key}
+                          checked={isDone(item.id, date)}
                           onChange={() => toggle(item.id, date)}
-                          className="flex-1"
                           label={item.product?.name ?? "מוצר נמחק"}
-                          labelClassName={`text-xs ${done ? "text-skn-ink/35 line-through" : "text-skn-ink/75"}`}
                         />
                         <button
+                          type="button"
                           onClick={() => handleDelete(item.id)}
-                          className="shrink-0 text-xs text-skn-ink/25 hover:text-skn-berry"
+                          className="skn-day-remove"
                           title="הסרה מהשגרה"
+                          aria-label={`הסרת ${item.product?.name ?? "המוצר"} מהשגרה`}
                         >
-                          ✕
+                          <X className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    );
-                  })}
+                    ))}
 
-                  {conflicts.length > 0 && (
-                    <div className="flex flex-col gap-1 rounded-lg border border-skn-honey/30 bg-skn-honey/10 px-2 py-1.5">
-                      {conflicts.map((c, i) => (
-                        <p key={i} className="text-[11px] leading-snug text-skn-honey">
-                          ⚠️ {INGREDIENT_LABELS[c.a]} + {INGREDIENT_LABELS[c.b]}: {c.reason}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    {conflicts.map((c, i) => (
+                      <p key={i} className="skn-warning mt-1.5">
+                        <TriangleAlert aria-hidden />
+                        <span>{conflictText(c)}</span>
+                      </p>
+                    ))}
+                  </div>
+                );
+              })}
+            </section>
           );
         })}
-      </div>
       </div>
     </div>
   );
