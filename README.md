@@ -16,13 +16,13 @@ Tracks product expiry, detects conflicts between active ingredients, builds a we
 
 **Weekly routine with ingredient conflict warnings** (retinol + AHA scheduled on the same evening)
 
-![Weekly routine with conflict warnings](docs/screenshots/schedule.png)
+![Weekly routine with conflict warnings](schedule.png)
 
 | Daily dashboard | Skincare cabinet |
 |---|---|
-| ![Daily dashboard](docs/screenshots/dashboard.png) | ![Skincare cabinet](docs/screenshots/inventory.png) |
+| ![Daily dashboard](dashboard.png) | ![Skincare cabinet](inventory.png) |
 | **Product details: expiry, benefits and conflicts** | **Login** |
-| ![Product details](docs/screenshots/product.png) | ![Login](docs/screenshots/login.png) |
+| ![Product details](product.png) | ![Login](login.png) |
 
 ---
 
