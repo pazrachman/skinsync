@@ -1,60 +1,100 @@
 # SkinSync 💧
 
-מערכת וובית לניהול חכם של שגרת טיפוח ו"ארון הטיפוח" האישי: מעקב תפוגה
-אוטומטי, איתור קונפליקטים בין רכיבים פעילים, בניית שגרה שבועית, ותזכורות
-תחזוקה והיגיינה.
+**A full-stack web app for managing a personal skincare routine and product inventory.**
+Tracks product expiry, detects conflicts between active ingredients, builds a weekly routine and keeps maintenance reminders, all in one dashboard.
 
-נבנה עם **Next.js (App Router)**, **TypeScript**, **Tailwind CSS** ו-
-**Supabase** (אימות + בסיס נתונים Postgres עם Row Level Security).
+🔗 **Live demo:** [skinsync-bpzh.vercel.app](https://skinsync-bpzh.vercel.app)
 
-## מה יש כאן
+![Next.js](https://img.shields.io/badge/Next.js-App%20Router-black?logo=nextdotjs)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ECF8E?logo=supabase&logoColor=white)
+![Vitest](https://img.shields.io/badge/Tested_with-Vitest-6E9F18?logo=vitest&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?logo=vercel)
 
-- **אזור אישי מאובטח** — הרשמה/התחברות עם Supabase Auth (אימייל + סיסמה).
-- **ארון טיפוח (Inventory)** — הוספה/עריכה/מחיקה של מוצרים, תאריך פתיחה,
-  תוקף לאחר פתיחה (בחודשים), וחיווי ויזואלי ירוק/צהוב/אדום לפי מרחק
-  מהתפוגה.
-- **זיהוי קונפליקטים בין רכיבים** — כל מוצר מתויג ברכיבים הפעילים שלו
-  (רטינול, ויטמין C, AHA/BHA וכו'), והמערכת מתריעה כששני מוצרים עם
-  שילוב בעייתי משובצים לאותה שגרה (למשל רטינול + AHA).
-- **שגרה שבועית** — שיבוץ מוצרים/מכשירים לימים ולסלוט (בוקר/ערב), עם
-  סימון V לביצוע בפועל וקונפליקטים מוצגים ישירות בתא הרלוונטי.
-- **תזכורות תחזוקה** — משימות מחזוריות שאינן נמרחות על הפנים (ניקוי
-  מברשות, חיטוי ציפית משי וכו'), עם מעקב "כל כמה ימים" ו"בוצע לאחרונה".
-- **לוח בקרה** — תמונת מצב יומית: השגרה של היום, מוצרים שדורשים תשומת
-  לב, ותזכורות קרובות/באיחור.
+## Screenshots
 
-## הרצה מקומית — שלב אחר שלב
+**Weekly routine with ingredient conflict warnings** (retinol + AHA scheduled on the same evening)
 
-### 1. יצירת פרויקט Supabase
+![Weekly routine with conflict warnings](docs/screenshots/schedule.png)
 
-1. היכנסי ל-[supabase.com](https://supabase.com) ופתחי פרויקט חדש (יש
-   תוכנית חינמית).
-2. בתפריט **Project Settings → API** תמצאי את:
-   - `Project URL`
-   - `anon public` key
-3. בתפריט **SQL Editor** הריצי, **לפי הסדר**, כל אחד מהקבצים שבתיקייה
-   `supabase/migrations/` (שאילתה חדשה → הדבקה → **Run**):
-   1. `20260601000000_initial_schema.sql` — טבלאות, הרשאות (RLS) וטריגרים.
-   2. `20261109000000_harden_schedule_ownership_and_weekdays.sql` — הקשחת
-      RLS (אי אפשר לסמן V/לשבץ מוצר על פריט של משתמשת אחרת) ואילוץ
-      `days_of_week` לטווח 0–6.
+| Daily dashboard | Skincare cabinet |
+|---|---|
+| ![Daily dashboard](docs/screenshots/dashboard.png) | ![Skincare cabinet](docs/screenshots/inventory.png) |
+| **Product details: expiry, benefits and conflicts** | **Login** |
+| ![Product details](docs/screenshots/product.png) | ![Login](docs/screenshots/login.png) |
 
-   לחלופין, עם ה-CLI: `npx supabase link --project-ref <ref>` ואז
-   `npx supabase db push`.
+---
 
-   **פרויקט קיים** (שכבר הריץ בעבר את `supabase/schema.sql` הישן): מספיק
-   להריץ רק את המיגרציה השנייה. היא מנקה קודם נתונים לא תקינים (סימוני V
-   שנוצרו על פריט של משתמשת אחרת, ימים מחוץ לטווח 0–6) ורק אז מוסיפה את
-   האילוצים. אם עובדים עם `db push`, קודם מסמנים את הסכימה הראשונית כמיושמת:
-   `npx supabase migration repair --status applied 20260601000000`.
-4. ודאי שב-**Authentication → Providers** ה-Email provider פעיל (ברירת
-   מחדל). אם תרצי שהרשמה לא תדרוש אימות מייל, אפשר לכבות זאת תחת
-   **Authentication → Settings → Email Auth → Confirm email**.
+## Features
 
-### 2. הגדרת משתני סביבה
+- **Secure personal area:** sign-up and sign-in with Supabase Auth (email and password).
+- **Skincare cabinet (inventory):** add, edit and delete products; track the opening date and shelf life after opening, with green / yellow / red indicators by time left until expiry.
+- **Ingredient conflict detection:** each product is tagged with its active ingredients (retinol, vitamin C, AHA/BHA, etc.), and the app warns when a problematic combination (e.g. retinol + AHA) is scheduled in the same routine.
+- **Weekly routine:** assign products and tools to days and morning/evening slots, check off completed steps, and see conflicts right in the relevant cell.
+- **Maintenance reminders:** recurring non-skin tasks (cleaning brushes, washing silk pillowcases, etc.) with "every N days" and "last done" tracking.
+- **Dashboard:** a daily snapshot of today's routine, products that need attention, and upcoming or overdue reminders.
 
-העתיקי את `.env.local.example` לקובץ בשם `.env.local` ומלאי את הערכים
-שקיבלת משלב 1:
+## Technical highlights
+
+- **Row Level Security everywhere:** every table is protected by Postgres RLS, so users can only read and write their own data. A hardening migration also blocks cross-user actions such as checking off or scheduling another user's item.
+- **Defense in depth:** input is validated both in Server Actions and by database `CHECK` constraints (e.g. weekdays limited to 0–6).
+- **Server Actions** for all database writes, with a uniform `ActionResult` error model.
+- **Tested at three levels with Vitest:** unit tests for pure logic, Server Action tests with simulated failures, UI component tests (jsdom), and integration tests that run against a real local Supabase in Docker, including tests that verify one user cannot access another user's data.
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js (App Router), React, TypeScript, Tailwind CSS |
+| Backend | Next.js Server Actions |
+| Database & Auth | Supabase (PostgreSQL, Auth, Row Level Security) |
+| Testing | Vitest, jsdom, local Supabase via Docker |
+| Deployment | Vercel |
+
+## Project structure
+
+```
+src/
+  app/
+    login/, signup/        auth pages
+    auth/callback/         email verification handler
+    (app)/                 pages that require login
+      dashboard/           daily dashboard
+      inventory/           skincare cabinet
+      schedule/            weekly routine
+      reminders/           maintenance reminders
+  components/              UI components (forms, product cards, routine grid...)
+  lib/
+    supabase/              Supabase clients (browser / server / proxy)
+    actions/               Server Actions (database CRUD)
+    expiry.ts              expiry and reminder status logic
+    ingredients.ts         active ingredient conflict matrix
+    validation.ts          shared validation (weekdays, dates)
+    errors.ts              uniform error messages + ActionResult
+    types.ts               shared types
+supabase/
+  config.toml              local Supabase settings
+  migrations/              database schema + RLS, in order
+tests/
+  unit/, ui/               logic, Server Action and UI tests
+  integration/             tests against a real local Supabase
+```
+
+## Running locally
+
+### 1. Set up Supabase
+
+1. Create a project at [supabase.com](https://supabase.com) (the free plan is enough).
+2. Under **Project Settings → API**, copy the `Project URL` and the `anon public` key.
+3. In the **SQL Editor**, run the files in `supabase/migrations/` in order:
+   1. `20260601000000_initial_schema.sql`: tables, RLS policies and triggers
+   2. `20261109000000_harden_schedule_ownership_and_weekdays.sql`: RLS hardening and weekday constraints
+
+   Or with the CLI: `npx supabase link --project-ref <ref>` and then `npx supabase db push`.
+4. Make sure the Email provider is enabled under **Authentication → Providers**. To skip email confirmation on sign-up, turn off **Confirm email** under **Authentication → Settings**.
+
+### 2. Environment variables
 
 ```bash
 cp .env.local.example .env.local
@@ -65,98 +105,48 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
 ```
 
-### 3. התקנה והרצה
+### 3. Install and run
 
 ```bash
 npm install
 npm run dev
 ```
 
-האתר יעלה בכתובת [http://localhost:3000](http://localhost:3000).
-הרשמה ראשונה יוצרת אוטומטית פרופיל אישי בטבלת `profiles`.
+The app runs at http://localhost:3000. A user profile is created automatically on first sign-up.
 
-### 4. בדיקות
+### 4. Tests
 
 ```bash
-npm run test:unit          # לוגיקה טהורה + Server Actions עם כשלים מדומים + UI (jsdom)
-npm run db:start           # Supabase מקומי ב-Docker (פעם ראשונה מוריד images)
-npm run test:integration   # מול בסיס הנתונים המקומי האמיתי
-npm test                   # הכל
+npm run test:unit          # pure logic + Server Actions with simulated failures + UI (jsdom)
+npm run db:start           # local Supabase in Docker (first run downloads images)
+npm run test:integration   # runs against the real local database
+npm test                   # everything
 ```
 
-בדיקות האינטגרציה דורשות **Docker** פעיל. `npm run db:start` מרים
-Postgres + Auth + REST מקומיים ומריץ את כל המיגרציות; הבדיקות קוראות את
-הכתובת והמפתחות אוטומטית מ-`supabase status`, ומסרבות לרוץ מול כתובת שאינה
-localhost (הן יוצרות ומוחקות משתמשים עם מפתח service role). אחרי שינוי
-מיגרציה: `npm run db:reset`. סיום: `npm run db:stop`.
+Integration tests require Docker. They read the local URL and keys from `supabase status` and refuse to run against anything other than localhost. After changing a migration run `npm run db:reset`, and stop the local stack with `npm run db:stop`.
 
-מה נבדק מול ה-DB האמיתי (`tests/integration/`):
-
-- יצירת שגרה → סימון V → קריאה חוזרת של הסימון השמור (וביטולו).
-- ניסיון של משתמשת אחת לסמן V / לעדכן / למחוק / לקרוא סימון על פריט שגרה
-  של משתמשת אחרת, ולשבץ מוצר של משתמשת אחרת — נחסם גם ב-RLS (ישירות מול
-  הטבלה) וגם ב-Server Action, ומאומת עם service role שלא נכתב כלום.
-- ימים לא תקינים (‎-1, 7, 8, 2.5, NaN, ‎" 3"‎ וכו') — נדחים ב-action
-  ובאילוץ ה-CHECK של בסיס הנתונים.
-
-### 5. בנייה לפרודקשן
+### 5. Production build
 
 ```bash
 npm run build
 npm start
 ```
 
-הדרך הכי פשוטה לפרוס באינטרנט היא [Vercel](https://vercel.com) — מחברים
-את הריפו, מגדירים את שני משתני הסביבה בהגדרות הפרויקט ב-Vercel, ולוחצים
-Deploy.
+To deploy on [Vercel](https://vercel.com), connect the repository, set the two environment variables in the project settings, and deploy.
 
-## מבנה הפרויקט
+## Future ideas
 
-```
-src/
-  app/
-    login/, signup/            עמודי אימות
-    auth/callback/              קליטת קישורי אימות מייל
-    (app)/                      כל העמודים שדורשים התחברות
-      dashboard/                 לוח בקרה
-      inventory/                 ארון הטיפוח
-      schedule/                  שגרה שבועית
-      reminders/                 תזכורות תחזוקה
-  components/                   רכיבי UI (טפסים, כרטיסי מוצר, גריד שגרה...)
-  lib/
-    supabase/                   קליינטים ל-Supabase (browser/server/proxy)
-    actions/                    Server Actions (CRUD מול בסיס הנתונים)
-    expiry.ts                   לוגיקת חישוב תפוגה וסטטוס תזכורות
-    ingredients.ts               מטריצת קונפליקטים בין רכיבים פעילים
-    types.ts                    טיפוסים משותפים
-    validation.ts               ולידציה משותפת (ימים בשבוע, תאריכים)
-    errors.ts                   הודעות שגיאה אחידות + ActionResult
-supabase/
-  config.toml                   הגדרות Supabase מקומי (supabase start)
-  migrations/                   סכימת בסיס הנתונים + RLS, לפי סדר
-tests/
-  integration/                  בדיקות מול Supabase מקומי אמיתי
-  unit/, ui/                    כשלים מדומים ב-Server Actions, רכיבי UI
-```
+- Real email / push notifications for expiring products and overdue reminders (Supabase Edge Functions + cron, reusing the logic in `lib/expiry.ts`).
+- A larger ingredient conflict matrix.
+- Product photos with Supabase Storage.
+- A guest / demo mode before sign-up.
 
-## הרחבות אפשריות להמשך
+## Credits
 
-- שליחת התראות בפועל (מייל/פוש) על תפוגה קרובה ותזכורות באיחור, למשל
-  עם Supabase Edge Functions + cron.
-  * לוגיקת החישוב כבר קיימת ב-`lib/expiry.ts` — צריך רק "משדר" שמריץ
-    אותה מדי יום ושולח את התוצאה.
-- הרחבת מטריצת הקונפליקטים בין רכיבים (`lib/ingredients.ts`) — היא
-  בנויה כרשימת חוקים פשוטה שקל להוסיף אליה.
-- העלאת תמונת מוצר (Supabase Storage) לכרטיס המוצר בארון הטיפוח.
-- מצב "אורח"/דמו לפני הרשמה.
+- Login screen video: [Pexels, video 6446058](https://www.pexels.com/video/6446058/), under the free Pexels license (trimmed, mirrored, looped and compressed).
 
-## קרדיטים
-
-- סרטון הטפטפת במסך הכניסה: [Pexels, סרטון 6446058](https://www.pexels.com/video/6446058/)
-  ברישיון Pexels החופשי. הסרטון נחתך ל-0–10 שניות, שוקף אופקית, הולאם
-  ללולאה עם מעבר הדרגתי ונדחס (`public/media/drip.*`).
+> **Note:** the ingredient conflict matrix is a general reference and does not replace professional dermatological advice.
 
 ---
 
-**הערה:** מטריצת הקונפליקטים בין רכיבים היא כלי עזר כללי ואינה תחליף
-לייעוץ דרמטולוגי מקצועי.
+Built by **Paz Rachman** as the final project of the *Internet Technologies* course, B.Sc. Computer Science, Reichman University (2026).
