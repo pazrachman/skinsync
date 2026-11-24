@@ -41,6 +41,13 @@ export default function LoginVideo() {
 
     applyRate(video);
 
+    // `autoPlay` alone isn't always honored on phones (the element is
+    // inserted after hydration), so start it explicitly. Muted inline
+    // playback is allowed everywhere; if the OS still refuses (e.g. iOS
+    // Low Power Mode) the poster simply stays up.
+    video.muted = true;
+    void video.play().catch(() => {});
+
     // Pause while the tab is hidden; resume when it comes back.
     const onVisibility = () => {
       if (document.hidden) video.pause();
@@ -64,8 +71,11 @@ export default function LoginVideo() {
       // Some browsers reset the rate when the source loads.
       onLoadedMetadata={(e) => applyRate(e.currentTarget)}
     >
-      <source src="/media/drip.webm" type="video/webm" />
-      <source src="/media/drip.mp4" type="video/mp4" />
+      {/* Both files must stay 4:2:0 (yuv420p): phone hardware decoders
+          can't play 4:4:4, which desktop browsers decode in software.
+          The codec strings let a browser skip a file it can't decode. */}
+      <source src="/media/drip.webm" type='video/webm; codecs="vp9"' />
+      <source src="/media/drip.mp4" type='video/mp4; codecs="avc1.4D401F"' />
     </video>
   ) : (
     // eslint-disable-next-line @next/next/no-img-element -- static poster, same frame the video starts on
